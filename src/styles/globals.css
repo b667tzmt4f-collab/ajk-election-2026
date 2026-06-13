@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Light mode — default — warm cream (reference image 2) ── */
+:root {
+  --bg:        #f5f0e8;
+  --bg2:       #ffffff;
+  --bg3:       #ede8df;
+  --border:    #d9d0c0;
+  --text:      #1a1108;
+  --text2:     #4a3f2f;
+  --text3:     #8a7a66;
+  --card-bg:   #ffffff;
+  --input-bg:  #faf7f2;
+  --shadow:    rgba(90,60,20,0.09);
+  --accent:    #6b2d0e;
+  --accent-h:  #8b3a10;
+}
+
+/* ── Dark mode ─────────────────────────────────────────────── */
+:root.dark {
+  --bg:        #0a0f1e;
+  --bg2:       #111827;
+  --bg3:       #1e2a3a;
+  --border:    #2d3f55;
+  --text:      #f1f5f9;
+  --text2:     #94a3b8;
+  --text3:     #64748b;
+  --card-bg:   #111827;
+  --input-bg:  #1e2a3a;
+  --shadow:    rgba(0,0,0,0.35);
+  --accent:    #93c5fd;
+  --accent-h:  #60a5fa;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+input, select {
+  background-color: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+input::placeholder { color: var(--text3); }

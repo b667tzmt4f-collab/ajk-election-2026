@@ -1,0 +1,247 @@
+import { useState } from 'react'
+import Layout from '@/components/Layout'
+import StatCard from '@/components/StatCard'
+import PartyTallyBar from '@/components/PartyTallyBar'
+import { useLiveResults } from '@/hooks/useLiveResults'
+import { partyColor } from '@/lib/supabase'
+
+export default function LiveResults() {
+  const {
+    seatResults,
+    seatsDecided,
+    seatsPending,
+    partyTally,
+    loading,
+    lastUpdated,
+  } = useLiveResults()
+
+  const [filter, setFilter] = useState<'All' | 'In-Region' | 'Refugee'>('All')
+  const [selectedSeat, setSelectedSeat] = useState<string | null>(null)
+
+  const filtered = seatResults.filter(
+    (s) => filter === 'All' || s.region === filter
+  )
+
+  const selectedData = seatResults.find((s) => s.seat_id === selectedSeat)
+
+  const topParty = Object.entries(partyTally).sort((a, b) => b[1] - a[1])[0]
+
+  return (
+    <Layout>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-white">📡 Live Election Results</h2>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {lastUpdated
+              ? `Last updated: ${lastUpdated.toLocaleTimeString()} · updates instantly`
+              : 'Connecting to live feed...'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {(['All', 'In-Region', 'Refugee'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                filter === f
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:text-white'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center text-gray-400 py-20">
+          <p className="text-lg mb-2">Loading results...</p>
+          <p className="text-sm text-gray-600">Connecting to Supabase</p>
+        </div>
+      ) : (
+        <>
+          {/* KPI row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <StatCard
+              label="Seats declared"
+              value={`${seatsDecided.length} / 45`}
+              sub="Results reported"
+            />
+            <StatCard
+              label="Seats pending"
+              value={seatsPending.length}
+              sub="Awaiting results"
+            />
+            <StatCard label="Majority needed" value="23" sub="of 45 seats" />
+            {topParty ? (
+              <StatCard
+                label="Currently leading"
+                value={`${topParty[0]} (${topParty[1]})`}
+                color={partyColor(topParty[0])}
+              />
+            ) : (
+              <StatCard label="Currently leading" value="—" sub="No results yet" />
+            )}
+          </div>
+
+          {/* Party tally */}
+          {Object.keys(partyTally).length > 0 && (
+            <div className="card mb-6">
+              <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">
+                Seat Tally
+              </h3>
+              <PartyTallyBar tally={partyTally} />
+            </div>
+          )}
+
+          {Object.keys(partyTally).length === 0 && (
+            <div className="card mb-6 text-center py-8 text-gray-500">
+              <p className="text-lg mb-1">⏳ Awaiting first results</p>
+              <p className="text-sm">
+                Seat tally will appear here as results are entered.
+                Go to{' '}
+                <a href="/enter" className="text-blue-400 underline">
+                  Data Entry
+                </a>{' '}
+                to enter results.
+              </p>
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Seat list */}
+            <div className="card">
+              <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">
+                Constituencies ({filtered.length})
+              </h3>
+              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                {filtered.map((seat) => (
+                  <button
+                    key={seat.seat_id}
+                    onClick={() =>
+                      setSelectedSeat(
+                        selectedSeat === seat.seat_id ? null : seat.seat_id
+                      )
+                    }
+                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                      selectedSeat === seat.seat_id
+                        ? 'border-blue-500 bg-blue-950'
+                        : 'border-gray-700 hover:border-gray-600 bg-gray-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-gray-500">
+                          {seat.seat_id} ·{' '}
+                        </span>
+                        <span className="text-sm font-medium">{seat.seat_name}</span>
+                      </div>
+                      {seat.has_results && seat.winner ? (
+                        <span
+                          className="badge text-white px-2 py-0.5 text-xs rounded font-semibold"
+                          style={{ backgroundColor: partyColor(seat.winner.party_2026) }}
+                        >
+                          {seat.winner.party_2026}
+                        </span>
+                      ) : (
+                        <span className="badge bg-gray-700 text-gray-400 px-2 py-0.5 text-xs rounded">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    {seat.has_results && seat.winner && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {seat.winner.candidate_name} ·{' '}
+                        {seat.winner.votes_2026.toLocaleString()} votes
+                        {seat.margin_2026 != null &&
+                          ` · margin ${seat.margin_2026.toLocaleString()}`}
+                      </p>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Seat detail */}
+            <div className="card">
+              {selectedData ? (
+                <>
+                  <h3 className="text-sm font-semibold text-gray-300 mb-1 uppercase tracking-wide">
+                    {selectedData.seat_id} — {selectedData.seat_name}
+                  </h3>
+                  <p className="text-xs text-gray-500 mb-4">
+                    {selectedData.region} · Registered 2026:{' '}
+                    {selectedData.registered_2026.toLocaleString()}
+                  </p>
+
+                  <div className="space-y-3">
+                    {selectedData.candidates.map((c) => {
+                      const total = selectedData.total_votes_2026 || 1
+                      const pct = ((c.votes_2026 / total) * 100).toFixed(1)
+                      const isWinner =
+                        selectedData.has_results &&
+                        c.id === selectedData.winner?.id
+                      return (
+                        <div key={c.id} className="space-y-0.5">
+                          <div className="flex justify-between text-sm">
+                            <span
+                              className={
+                                isWinner ? 'font-bold text-white' : 'text-gray-300'
+                              }
+                            >
+                              {isWinner && '✓ '}
+                              {c.candidate_name}
+                            </span>
+                            <span className="text-gray-400">
+                              {c.votes_2026 > 0
+                                ? `${c.votes_2026.toLocaleString()} (${pct}%)`
+                                : '—'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded font-medium text-white"
+                              style={{ backgroundColor: partyColor(c.party_2026) }}
+                            >
+                              {c.party_2026}
+                            </span>
+                            {c.votes_2026 > 0 && (
+                              <div className="flex-1 bg-gray-800 rounded h-2">
+                                <div
+                                  className="h-2 rounded transition-all duration-500"
+                                  style={{
+                                    width: `${pct}%`,
+                                    backgroundColor: partyColor(c.party_2026),
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            2021: {c.votes_2021.toLocaleString()}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-500">
+                    2021: {selectedData.winner_2021} ({selectedData.winner_party_2021})
+                    won with {selectedData.winner_votes_2021.toLocaleString()} votes ·
+                    Turnout {selectedData.turnout_pct_2021}%
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-48 text-gray-600 text-sm">
+                  ← Click a constituency to see the full result
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </Layout>
+  )
+}
