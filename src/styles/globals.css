@@ -76,3 +76,19 @@ input:focus, select:focus {
   border-color: var(--accent);
 }
 input::placeholder { color: var(--text3); }
+
+/* ── Table header alignment fix ─────────────────────────── */
+/* Prevents first-row mis-alignment seen across all tables */
+table { border-collapse: collapse; width: 100%; }
+th, td { vertical-align: middle; }
+thead tr:first-child th:first-child { border-radius: 0; }
+
+/* ── Performance: GPU-accelerate transitions ─────────────── */
+.card, button, input, select, tr {
+  will-change: auto;
+}
+
+/* ── Scrollbar styling ───────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg3); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

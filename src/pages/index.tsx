@@ -18,9 +18,9 @@ export default function LiveResults() {
   const [filter, setFilter] = useState<'All' | 'In-Region' | 'Refugee'>('All')
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null)
 
-  const filtered = seatResults.filter(
-    (s) => filter === 'All' || s.region === filter
-  )
+  const filtered = seatResults
+    .filter((s) => filter === 'All' || s.region === filter)
+    .sort((a, b) => parseInt(a.seat_id.split('-')[1]) - parseInt(b.seat_id.split('-')[1]))
 
   const selectedData = seatResults.find((s) => s.seat_id === selectedSeat)
 
@@ -31,8 +31,8 @@ export default function LiveResults() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white">📡 Live Election Results</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <h2 className="text-2xl font-bold">📡 Live Election Results</h2>
+          <p className="text-sm mt-0.5" style={{color:"var(--text2)"}}>
             {lastUpdated
               ? `Last updated: ${lastUpdated.toLocaleTimeString()} · updates instantly`
               : 'Connecting to live feed...'}
@@ -45,8 +45,7 @@ export default function LiveResults() {
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 filter === f
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                  ? '' : ''
               }`}
             >
               {f}
@@ -56,9 +55,9 @@ export default function LiveResults() {
       </div>
 
       {loading ? (
-        <div className="text-center text-gray-400 py-20">
+        <div className="text-center py-20" style={{color:"var(--text2)"}}>
           <p className="text-lg mb-2">Loading results...</p>
-          <p className="text-sm text-gray-600">Connecting to Supabase</p>
+          <p className="text-sm" style={{color:"var(--text3)"}}>Connecting to Supabase</p>
         </div>
       ) : (
         <>
