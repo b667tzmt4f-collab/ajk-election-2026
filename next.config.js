@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Faster page loads via compression
   compress: true,
-  // Cache static assets aggressively
   headers: async () => [
     {
       source: '/(.*)',
@@ -12,9 +10,5 @@ const nextConfig = {
       ],
     },
   ],
-  // Reduce bundle size
-  experimental: {
-    optimizeCss: true,
-  },
 }
 module.exports = nextConfig
