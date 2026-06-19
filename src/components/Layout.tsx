@@ -6,7 +6,7 @@ import { useTheme } from '@/hooks/useTheme'
 const NAV = [
   { href: '/',            label: '📡 Live Results'  },
   { href: '/records',     label: '📊 Records'       },
-  { href: '/demography',  label: '🗺️ Demography'    },
+  { href: '/demography',  label: '🗺️ Voters Details' },
   { href: '/candidates',  label: '👤 Candidates'    },
   { href: '/projection',  label: '🔮 Projection'    },
   { href: '/enter',       label: '✏️ Enter Results', special: true },
