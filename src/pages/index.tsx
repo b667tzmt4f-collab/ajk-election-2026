@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import PartyTallyBar from '@/components/PartyTallyBar'
+import SeatCharts from '@/components/SeatCharts'
 import { useLiveResults } from '@/hooks/useLiveResults'
 import { partyColor } from '@/lib/supabase'
 
@@ -91,7 +92,10 @@ export default function LiveResults() {
               <h3 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--text2)' }}>
                 Seat Tally
               </h3>
-              <PartyTallyBar tally={partyTally} />
+              <SeatCharts tally={partyTally} houseSize={45} />
+              <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+                <PartyTallyBar tally={partyTally} />
+              </div>
             </div>
           )}
 

@@ -1,6 +1,7 @@
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { partyColor } from '@/lib/supabase'
+import SeatCharts from '@/components/SeatCharts'
 
 const PROJECTION = [
   { seat_id:'LA-1', seat_name:'Mirpur-I (Dadyal)', division:'Mirpur',
@@ -30,6 +31,12 @@ const PIPELINE = [
 ]
 
 export default function Projection() {
+  // aggregate the sample calls by projected party (partial — not all 45 seats)
+  const projTally = PROJECTION.reduce<Record<string, number>>((acc, s) => {
+    acc[s.projected_winner] = (acc[s.projected_winner] || 0) + 1
+    return acc
+  }, {})
+
   return (
     <Layout>
       <div className="mb-6">
@@ -77,6 +84,13 @@ export default function Projection() {
           These calls are for demonstration only, based on 2021 results and basic ground assessment.
           Full model requires survey data and KPI scoring.
         </p>
+        <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
+          <SeatCharts
+            tally={projTally}
+            houseSize={45}
+            title={`Sample calls so far (${PROJECTION.length} of 45 — illustrative only)`}
+          />
+        </div>
         <div className="grid md:grid-cols-3 gap-3">
           {PROJECTION.map(s => {
             const pc = partyColor(s.projected_winner)

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { supabase, partyColor } from '@/lib/supabase'
+import SeatCharts from '@/components/SeatCharts'
 
 type Row = {
   seat_id: string; seat_name: string; division: string; region_type: string
@@ -123,6 +124,9 @@ export default function Records() {
                 {y} — {y===2011?'PPP majority':y===2016?'PML-N sweep':'PTI wins (post-tribunal)'}
               </h3>
               <TallyBar year={y} />
+              <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+                <SeatCharts tally={TALLIES[y]} houseSize={45} />
+              </div>
             </div>
           ))}
         </div>
