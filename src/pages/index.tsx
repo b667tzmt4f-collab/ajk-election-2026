@@ -4,7 +4,7 @@ import StatCard from '@/components/StatCard'
 import PartyTallyBar from '@/components/PartyTallyBar'
 import { useLiveResults } from '@/hooks/useLiveResults'
 import { partyColor } from '@/lib/supabase'
-
+ 
 export default function LiveResults() {
   const {
     seatResults,
@@ -14,18 +14,18 @@ export default function LiveResults() {
     loading,
     lastUpdated,
   } = useLiveResults()
-
+ 
   const [filter, setFilter] = useState<'All' | 'In-Region' | 'Refugee'>('All')
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null)
-
+ 
   const filtered = seatResults
     .filter((s) => filter === 'All' || s.region === filter)
     .sort((a, b) => parseInt(a.seat_id.split('-')[1]) - parseInt(b.seat_id.split('-')[1]))
-
+ 
   const selectedData = seatResults.find((s) => s.seat_id === selectedSeat)
-
+ 
   const topParty = Object.entries(partyTally).sort((a, b) => b[1] - a[1])[0]
-
+ 
   return (
     <Layout>
       {/* Header */}
@@ -53,7 +53,7 @@ export default function LiveResults() {
           ))}
         </div>
       </div>
-
+ 
       {loading ? (
         <div className="text-center py-20" style={{color:"var(--text2)"}}>
           <p className="text-lg mb-2">Loading results...</p>
@@ -84,7 +84,7 @@ export default function LiveResults() {
               <StatCard label="Currently leading" value="—" sub="No results yet" />
             )}
           </div>
-
+ 
           {/* Party tally */}
           {Object.keys(partyTally).length > 0 && (
             <div className="card mb-6">
@@ -94,7 +94,7 @@ export default function LiveResults() {
               <PartyTallyBar tally={partyTally} />
             </div>
           )}
-
+ 
           {Object.keys(partyTally).length === 0 && (
             <div className="card mb-6 text-center py-8 text-gray-500">
               <p className="text-lg mb-1">⏳ Awaiting first results</p>
@@ -108,7 +108,7 @@ export default function LiveResults() {
               </p>
             </div>
           )}
-
+ 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Seat list */}
             <div className="card">
@@ -162,7 +162,7 @@ export default function LiveResults() {
                 ))}
               </div>
             </div>
-
+ 
             {/* Seat detail */}
             <div className="card">
               {selectedData ? (
@@ -174,7 +174,7 @@ export default function LiveResults() {
                     {selectedData.region} · Registered 2026:{' '}
                     {selectedData.registered_2026.toLocaleString()}
                   </p>
-
+ 
                   <div className="space-y-3">
                     {selectedData.candidates.map((c) => {
                       const total = selectedData.total_votes_2026 || 1
@@ -225,7 +225,7 @@ export default function LiveResults() {
                       )
                     })}
                   </div>
-
+ 
                   <div className="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-500">
                     2021: {selectedData.winner_2021} ({selectedData.winner_party_2021})
                     won with {selectedData.winner_votes_2021.toLocaleString()} votes ·
