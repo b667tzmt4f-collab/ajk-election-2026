@@ -79,7 +79,7 @@ export default function Projection() {
         </p>
         <div className="grid md:grid-cols-3 gap-3">
           {PROJECTION.map(s => {
-            const pc = `#${partyColor(s.projected_winner)}`
+            const pc = partyColor(s.projected_winner)
             return (
               <div key={s.seat_id} className="rounded-lg p-4"
                    style={{ border: `1px solid var(--border)`, borderLeft: `4px solid ${pc}` }}>
