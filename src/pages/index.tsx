@@ -101,7 +101,7 @@ export default function LiveResults() {
               <p className="text-sm">
                 Seat tally will appear here as results are entered.
                 Go to{' '}
-                <a href="/enter" className="text-blue-400 underline">
+                <a href="/enter" className="underline" style={{ color: "var(--accent)" }}>
                   Data Entry
                 </a>{' '}
                 to enter results.
@@ -124,11 +124,11 @@ export default function LiveResults() {
                         selectedSeat === seat.seat_id ? null : seat.seat_id
                       )
                     }
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                      selectedSeat === seat.seat_id
-                        ? 'border-blue-500 bg-blue-950'
-                        : 'border-gray-700 hover:border-gray-600 bg-gray-800'
-                    }`}
+                    className="w-full text-left p-3 rounded-lg border transition-colors"
+                    style={{
+                      borderColor: selectedSeat === seat.seat_id ? 'var(--accent)' : 'var(--border)',
+                      backgroundColor: selectedSeat === seat.seat_id ? 'var(--bg3)' : 'var(--card-bg)',
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -145,7 +145,7 @@ export default function LiveResults() {
                           {seat.winner.party_2026}
                         </span>
                       ) : (
-                        <span className="badge bg-gray-700 text-gray-400 px-2 py-0.5 text-xs rounded">
+                        <span className="badge px-2 py-0.5 text-xs rounded" style={{ backgroundColor: "var(--bg3)", color: "var(--text3)" }}>
                           Pending
                         </span>
                       )}
@@ -207,7 +207,7 @@ export default function LiveResults() {
                               {c.party_2026}
                             </span>
                             {c.votes_2026 > 0 && (
-                              <div className="flex-1 bg-gray-800 rounded h-2">
+                              <div className="flex-1 rounded h-2" style={{ backgroundColor: "var(--bg3)" }}>
                                 <div
                                   className="h-2 rounded transition-all duration-500"
                                   style={{
@@ -226,7 +226,7 @@ export default function LiveResults() {
                     })}
                   </div>
  
-                  <div className="mt-4 pt-4 border-t border-gray-700 text-xs text-gray-500">
+                  <div className="mt-4 pt-4 text-xs" style={{ borderTop: "1px solid var(--border)", color: "var(--text3)" }}>
                     2021: {selectedData.winner_2021} ({selectedData.winner_party_2021})
                     won with {selectedData.winner_votes_2021.toLocaleString()} votes ·
                     Turnout {selectedData.turnout_pct_2021}%
