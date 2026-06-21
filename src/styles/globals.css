@@ -20,13 +20,13 @@
   --bg3:       #ECF1FF;
   --border:    #E2E7EE;
   --text:      #0C1320;
-  --text2:     #4a3f2f; /* legacy alias, see --muted below for new code */
+  --text2:     #4a3f2f;
   --text3:     #5B6675;
   --card-bg:   #ffffff;
   --input-bg:  #faf7f2;
   --shadow:    rgba(12,19,32,0.06);
-  --accent:    #1E50D8;
-  --accent-h:  #163FAF;
+  --accent:    #2C4A7C;
+  --accent-h:  #22395F;
   --muted:     #5B6675;
   --soft:      #ECF1FF;
 }

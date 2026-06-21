@@ -286,7 +286,7 @@ export default function Home() {
       {/* All styling lives here — styled-jsx is built into Next.js. */}
       <style jsx global>{`
         .dirA{font-family:'Hanken Grotesk',sans-serif;background:#F5F7FA;color:#0C1320;
-          --ink:#0C1320;--muted:#5B6675;--line:#E2E7EE;--accent:#1E50D8;--soft:#ECF1FF;
+          --ink:#0C1320;--muted:#5B6675;--line:#E2E7EE;--accent:#2C4A7C;--soft:#ECF1FF;
           width:100%;-webkit-font-smoothing:antialiased;min-height:100vh;}
         .dirA *{box-sizing:border-box;}
         .dirA a{color:inherit;text-decoration:none;}
@@ -319,8 +319,8 @@ export default function Home() {
         .a-cta{display:flex;gap:14px;align-items:center;}
         .a-btn{display:inline-flex;align-items:center;gap:9px;height:48px;padding:0 24px;border-radius:9px;
           font-size:14.5px;font-weight:600;transition:transform .12s,box-shadow .15s,background .15s;}
-        .a-btn-p{background:var(--accent);color:#fff;box-shadow:0 8px 20px -8px rgba(30,80,216,.6);}
-        .a-btn-p:hover{transform:translateY(-1px);box-shadow:0 12px 26px -8px rgba(30,80,216,.7);}
+        .a-btn-p{background:var(--accent);color:#fff;box-shadow:0 8px 20px -8px rgba(44,74,124,.6);}
+        .a-btn-p:hover{transform:translateY(-1px);box-shadow:0 12px 26px -8px rgba(44,74,124,.7);}
         .a-btn-s{border:1px solid var(--line);background:#fff;color:var(--ink);}
         .a-btn-s:hover{border-color:var(--accent);color:var(--accent);}
 
@@ -364,7 +364,7 @@ export default function Home() {
 
         .a-prods{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
         .a-prod{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;display:flex;gap:24px;align-items:flex-start;transition:border-color .15s,transform .12s,box-shadow .15s;}
-        .a-prod:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 16px 32px -18px rgba(30,80,216,.45);}
+        .a-prod:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 16px 32px -18px rgba(44,74,124,.45);}
         .a-prod-k{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent);border:1px solid var(--soft);background:var(--soft);width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:500;}
         .a-prod-n{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px;}
         .a-prod-d{font-size:13.5px;line-height:1.55;color:var(--muted);margin:0 0 16px;}
