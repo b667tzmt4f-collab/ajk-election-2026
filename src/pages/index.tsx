@@ -26,56 +26,56 @@ const FALLBACK_TALLY: { party: string; seats: number }[] = [
 // (already built and used on /live) — same shape: seat, leader, runner-up.
 type LiveSeat = {
   seat_id: string; name: string
-  leader: string; leader_party: string
-  runner: string; runner_party: string
+  leader: string; leader_party: string; leader_votes: number
+  runner: string; runner_party: string; runner_votes: number
   reporting: boolean
 }
 const LIVE_DUMMY: LiveSeat[] = [
-  { seat_id:'LA-1', name:'Mirpur-I', leader:'Ch. Saood', leader_party:'IND (ex-PTI)', runner:'M. Aslam', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-2', name:'Mirpur-II', leader:'Q. Majeed', leader_party:'PPP', runner:'A. Khan', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-3', name:'Mirpur-III', leader:'F. Mughal', leader_party:'PML-N', runner:'S. Gilani', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-4', name:'Mirpur-IV', leader:'T. Khan', leader_party:'PPP', runner:'R. Abbasi', runner_party:'IND (ex-PTI)', reporting:true },
-  { seat_id:'LA-5', name:'Bhimber-I', leader:'A. Hameed', leader_party:'PML-N', runner:'N. Gujjar', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-6', name:'Bhimber-II', leader:'S. Ayub', leader_party:'PPP', runner:'K. Raja', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-7', name:'Bhimber-III', leader:'Ch. Anwar', leader_party:'IND (ex-PTI)', runner:'W. Khan', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-8', name:'Kotli-I', leader:'M. Latif', leader_party:'PPP', runner:'A. Mir', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-9', name:'Kotli-II', leader:'S. Chaudhry', leader_party:'PML-N', runner:'F. Khan', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-10', name:'Kotli-III', leader:'A. Naseer', leader_party:'IND (ex-PTI)', runner:'T. Mahmood', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-11', name:'Kotli-IV', leader:'R. Akbar', leader_party:'PPP', runner:'Z. Khan', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-12', name:'Kotli-V', leader:'N. Hussain', leader_party:'PML-N', runner:'S. Raja', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-13', name:'Kotli-VI', leader:'M. Ishaq', leader_party:'PPP', runner:'A. Gardezi', runner_party:'AJKMC', reporting:true },
-  { seat_id:'LA-14', name:'Bagh-I', leader:'S. Khan', leader_party:'PML-N', runner:'F. Abbasi', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-15', name:'Bagh-II', leader:'I. Hussain', leader_party:'PPP', runner:'K. Mir', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-16', name:'Bagh-III', leader:'A. Qureshi', leader_party:'IND (ex-PTI)', runner:'S. Khan', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-17', name:'Haveli', leader:'M. Tariq', leader_party:'PPP', runner:'R. Mughal', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-18', name:'Poonch-I', leader:'S. Yaqoob', leader_party:'PML-N', runner:'N. Khan', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-19', name:'Poonch-II', leader:'A. Hameed', leader_party:'PPP', runner:'F. Raja', runner_party:'IND (ex-PTI)', reporting:true },
-  { seat_id:'LA-20', name:'Poonch-III', leader:'K. Abbasi', leader_party:'IND (ex-PTI)', runner:'M. Khan', runner_party:'PPP', reporting:true },
-  { seat_id:'LA-21', name:'Poonch-IV', leader:'S. Ibrahim', leader_party:'PPP', runner:'A. Sadiq', runner_party:'PML-N', reporting:true },
-  { seat_id:'LA-22', name:'Poonch-V', leader:'B. Khan', leader_party:'PML-N', runner:'T. Gilani', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-23', name:'Poonch-VI', leader:'M. Yasin', leader_party:'PPP', runner:'S. Raja', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-24', name:'Poonch-VII', leader:'A. Khan', leader_party:'IND (ex-PTI)', runner:'N. Mir', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-25', name:'Neelum-I', leader:'S. Hussain', leader_party:'PPP', runner:'F. Khan', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-26', name:'Neelum-II', leader:'M. Din', leader_party:'PML-N', runner:'A. Shah', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-27', name:'Muzaffarabad-I', leader:'T. Awan', leader_party:'PPP', runner:'K. Khan', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-28', name:'Muzaffarabad-II', leader:'S. Mir', leader_party:'PML-N', runner:'R. Abbasi', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-29', name:'Muzaffarabad-III', leader:'A. Sheikh', leader_party:'PPP', runner:'M. Raja', runner_party:'IND (ex-PTI)', reporting:false },
-  { seat_id:'LA-30', name:'Muzaffarabad-IV', leader:'N. Khan', leader_party:'IND (ex-PTI)', runner:'S. Mughal', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-31', name:'Muzaffarabad-V', leader:'F. Hussain', leader_party:'PPP', runner:'A. Khan', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-32', name:'Muzaffarabad-VI', leader:'K. Mahmood', leader_party:'PML-N', runner:'T. Shah', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-33', name:'Muzaffarabad-VII', leader:'S. Raja', leader_party:'PPP', runner:'M. Din', runner_party:'JKPP', reporting:false },
-  { seat_id:'LA-34', name:'Jammu-I', leader:'A. Qadir', leader_party:'PML-N', runner:'N. Khan', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-35', name:'Jammu-II', leader:'S. Bhatti', leader_party:'PML-N', runner:'F. Raja', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-36', name:'Jammu-III', leader:'M. Iqbal', leader_party:'PPP', runner:'A. Khan', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-37', name:'Jammu-IV', leader:'R. Saleem', leader_party:'PPP', runner:'K. Mir', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-38', name:'Jammu-V', leader:'S. Khan', leader_party:'PML-N', runner:'T. Abbasi', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-39', name:'Jammu-VI', leader:'A. Hussain', leader_party:'PPP', runner:'N. Raja', runner_party:'AJKMC', reporting:false },
-  { seat_id:'LA-40', name:'Valley-I', leader:'M. Yousaf', leader_party:'PPP', runner:'S. Khan', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-41', name:'Valley-II', leader:'K. Ahmed', leader_party:'PML-N', runner:'F. Mir', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-42', name:'Valley-III', leader:'S. Gilani', leader_party:'PPP', runner:'A. Shah', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-43', name:'Valley-IV', leader:'N. Khan', leader_party:'JKPP', runner:'M. Raja', runner_party:'PPP', reporting:false },
-  { seat_id:'LA-44', name:'Valley-V', leader:'A. Mir', leader_party:'PPP', runner:'S. Khan', runner_party:'PML-N', reporting:false },
-  { seat_id:'LA-45', name:'Valley-VI', leader:'T. Hussain', leader_party:'PML-N', runner:'K. Abbasi', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-1', name:'Mirpur-I', leader:'Ch. Saood', leader_party:'IND (ex-PTI)', leader_votes:8590, runner:'M. Aslam', runner_party:'PPP', runner_votes:8137, reporting:true },
+  { seat_id:'LA-2', name:'Mirpur-II', leader:'Q. Majeed', leader_party:'PPP', leader_votes:8780, runner:'A. Khan', runner_party:'PML-N', runner_votes:8274, reporting:true },
+  { seat_id:'LA-3', name:'Mirpur-III', leader:'F. Mughal', leader_party:'PML-N', leader_votes:8970, runner:'S. Gilani', runner_party:'PPP', runner_votes:8411, reporting:true },
+  { seat_id:'LA-4', name:'Mirpur-IV', leader:'T. Khan', leader_party:'PPP', leader_votes:9160, runner:'R. Abbasi', runner_party:'IND (ex-PTI)', runner_votes:8548, reporting:true },
+  { seat_id:'LA-5', name:'Bhimber-I', leader:'A. Hameed', leader_party:'PML-N', leader_votes:9350, runner:'N. Gujjar', runner_party:'PPP', runner_votes:8685, reporting:true },
+  { seat_id:'LA-6', name:'Bhimber-II', leader:'S. Ayub', leader_party:'PPP', leader_votes:9540, runner:'K. Raja', runner_party:'PML-N', runner_votes:8822, reporting:true },
+  { seat_id:'LA-7', name:'Bhimber-III', leader:'Ch. Anwar', leader_party:'IND (ex-PTI)', leader_votes:9730, runner:'W. Khan', runner_party:'PPP', runner_votes:8959, reporting:true },
+  { seat_id:'LA-8', name:'Kotli-I', leader:'M. Latif', leader_party:'PPP', leader_votes:9920, runner:'A. Mir', runner_party:'PML-N', runner_votes:9096, reporting:true },
+  { seat_id:'LA-9', name:'Kotli-II', leader:'S. Chaudhry', leader_party:'PML-N', leader_votes:10110, runner:'F. Khan', runner_party:'PPP', runner_votes:9233, reporting:true },
+  { seat_id:'LA-10', name:'Kotli-III', leader:'A. Naseer', leader_party:'IND (ex-PTI)', leader_votes:10300, runner:'T. Mahmood', runner_party:'PPP', runner_votes:9370, reporting:true },
+  { seat_id:'LA-11', name:'Kotli-IV', leader:'R. Akbar', leader_party:'PPP', leader_votes:10490, runner:'Z. Khan', runner_party:'PML-N', runner_votes:9507, reporting:true },
+  { seat_id:'LA-12', name:'Kotli-V', leader:'N. Hussain', leader_party:'PML-N', leader_votes:10680, runner:'S. Raja', runner_party:'PPP', runner_votes:9644, reporting:true },
+  { seat_id:'LA-13', name:'Kotli-VI', leader:'M. Ishaq', leader_party:'PPP', leader_votes:10870, runner:'A. Gardezi', runner_party:'AJKMC', runner_votes:9781, reporting:true },
+  { seat_id:'LA-14', name:'Bagh-I', leader:'S. Khan', leader_party:'PML-N', leader_votes:11060, runner:'F. Abbasi', runner_party:'PPP', runner_votes:9918, reporting:true },
+  { seat_id:'LA-15', name:'Bagh-II', leader:'I. Hussain', leader_party:'PPP', leader_votes:11250, runner:'K. Mir', runner_party:'PML-N', runner_votes:10055, reporting:true },
+  { seat_id:'LA-16', name:'Bagh-III', leader:'A. Qureshi', leader_party:'IND (ex-PTI)', leader_votes:11440, runner:'S. Khan', runner_party:'PPP', runner_votes:10192, reporting:true },
+  { seat_id:'LA-17', name:'Haveli', leader:'M. Tariq', leader_party:'PPP', leader_votes:11630, runner:'R. Mughal', runner_party:'PML-N', runner_votes:10329, reporting:true },
+  { seat_id:'LA-18', name:'Poonch-I', leader:'S. Yaqoob', leader_party:'PML-N', leader_votes:11820, runner:'N. Khan', runner_party:'PPP', runner_votes:10466, reporting:true },
+  { seat_id:'LA-19', name:'Poonch-II', leader:'A. Hameed', leader_party:'PPP', leader_votes:12010, runner:'F. Raja', runner_party:'IND (ex-PTI)', runner_votes:10603, reporting:true },
+  { seat_id:'LA-20', name:'Poonch-III', leader:'K. Abbasi', leader_party:'IND (ex-PTI)', leader_votes:12200, runner:'M. Khan', runner_party:'PPP', runner_votes:10740, reporting:true },
+  { seat_id:'LA-21', name:'Poonch-IV', leader:'S. Ibrahim', leader_party:'PPP', leader_votes:12390, runner:'A. Sadiq', runner_party:'PML-N', runner_votes:10877, reporting:true },
+  { seat_id:'LA-22', name:'Poonch-V', leader:'B. Khan', leader_party:'PML-N', leader_votes:0, runner:'T. Gilani', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-23', name:'Poonch-VI', leader:'M. Yasin', leader_party:'PPP', leader_votes:0, runner:'S. Raja', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-24', name:'Poonch-VII', leader:'A. Khan', leader_party:'IND (ex-PTI)', leader_votes:0, runner:'N. Mir', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-25', name:'Neelum-I', leader:'S. Hussain', leader_party:'PPP', leader_votes:0, runner:'F. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-26', name:'Neelum-II', leader:'M. Din', leader_party:'PML-N', leader_votes:0, runner:'A. Shah', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-27', name:'Muzaffarabad-I', leader:'T. Awan', leader_party:'PPP', leader_votes:0, runner:'K. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-28', name:'Muzaffarabad-II', leader:'S. Mir', leader_party:'PML-N', leader_votes:0, runner:'R. Abbasi', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-29', name:'Muzaffarabad-III', leader:'A. Sheikh', leader_party:'PPP', leader_votes:0, runner:'M. Raja', runner_party:'IND (ex-PTI)', runner_votes:0, reporting:false },
+  { seat_id:'LA-30', name:'Muzaffarabad-IV', leader:'N. Khan', leader_party:'IND (ex-PTI)', leader_votes:0, runner:'S. Mughal', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-31', name:'Muzaffarabad-V', leader:'F. Hussain', leader_party:'PPP', leader_votes:0, runner:'A. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-32', name:'Muzaffarabad-VI', leader:'K. Mahmood', leader_party:'PML-N', leader_votes:0, runner:'T. Shah', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-33', name:'Muzaffarabad-VII', leader:'S. Raja', leader_party:'PPP', leader_votes:0, runner:'M. Din', runner_party:'JKPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-34', name:'Jammu-I', leader:'A. Qadir', leader_party:'PML-N', leader_votes:0, runner:'N. Khan', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-35', name:'Jammu-II', leader:'S. Bhatti', leader_party:'PML-N', leader_votes:0, runner:'F. Raja', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-36', name:'Jammu-III', leader:'M. Iqbal', leader_party:'PPP', leader_votes:0, runner:'A. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-37', name:'Jammu-IV', leader:'R. Saleem', leader_party:'PPP', leader_votes:0, runner:'K. Mir', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-38', name:'Jammu-V', leader:'S. Khan', leader_party:'PML-N', leader_votes:0, runner:'T. Abbasi', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-39', name:'Jammu-VI', leader:'A. Hussain', leader_party:'PPP', leader_votes:0, runner:'N. Raja', runner_party:'AJKMC', runner_votes:0, reporting:false },
+  { seat_id:'LA-40', name:'Valley-I', leader:'M. Yousaf', leader_party:'PPP', leader_votes:0, runner:'S. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-41', name:'Valley-II', leader:'K. Ahmed', leader_party:'PML-N', leader_votes:0, runner:'F. Mir', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-42', name:'Valley-III', leader:'S. Gilani', leader_party:'PPP', leader_votes:0, runner:'A. Shah', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-43', name:'Valley-IV', leader:'N. Khan', leader_party:'JKPP', leader_votes:0, runner:'M. Raja', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-44', name:'Valley-V', leader:'A. Mir', leader_party:'PPP', leader_votes:0, runner:'S. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-45', name:'Valley-VI', leader:'T. Hussain', leader_party:'PML-N', leader_votes:0, runner:'K. Abbasi', runner_party:'PPP', runner_votes:0, reporting:false },
 ]
 
 const NAV = [
@@ -315,18 +315,36 @@ export default function Home() {
             <div className="a-liveseats">
               {LIVE_DUMMY.map((s) => (
                 <div key={s.seat_id} className="a-liverow">
-                  <div className="a-liverow-seat">
-                    <span className="a-liverow-id">{s.seat_id}</span>
-                    <span className="a-liverow-name">{s.name}</span>
-                  </div>
-                  <div className="a-liverow-result">
-                    <span className="a-liverow-badge"
-                          style={{ background: partyColor(s.leader_party) }}>
-                      {s.leader_party}
-                    </span>
-                    <span className="a-liverow-cand">{s.leader}</span>
+                  <div className="a-liverow-top">
+                    <div className="a-liverow-seat">
+                      <span className="a-liverow-id">{s.seat_id}</span>
+                      <span className="a-liverow-name">{s.name}</span>
+                    </div>
                     {!s.reporting && <span className="a-liverow-pending">awaiting</span>}
                   </div>
+
+                  {s.reporting ? (
+                    <div className="a-liverow-cands">
+                      <div className="a-liverow-cand-row">
+                        <span className="a-liverow-badge"
+                              style={{ background: partyColor(s.leader_party) }}>
+                          {s.leader_party}
+                        </span>
+                        <span className="a-liverow-cname">{s.leader}</span>
+                        <span className="a-liverow-votes">{s.leader_votes.toLocaleString()}</span>
+                      </div>
+                      <div className="a-liverow-cand-row a-liverow-cand-row--runner">
+                        <span className="a-liverow-badge a-liverow-badge--ghost"
+                              style={{ borderColor: partyColor(s.runner_party), color: partyColor(s.runner_party) }}>
+                          {s.runner_party}
+                        </span>
+                        <span className="a-liverow-cname">{s.runner}</span>
+                        <span className="a-liverow-votes">{s.runner_votes.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="a-liverow-cands a-liverow-cands--empty">No votes counted yet</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -530,19 +548,25 @@ export default function Home() {
         .a-livetally-n{color:var(--ink);}
 
         .a-liveseats{max-height:480px;overflow-y:auto;}
-        .a-liverow{display:flex;align-items:center;justify-content:space-between;gap:10px;
-          padding:11px 20px;border-bottom:1px solid var(--line);}
+        .a-liverow{padding:12px 20px;border-bottom:1px solid var(--line);}
         .a-liverow:last-child{border-bottom:none;}
-        .a-liverow-seat{display:flex;flex-direction:column;min-width:0;flex-shrink:0;}
-        .a-liverow-id{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
-        .a-liverow-name{font-size:12.5px;font-weight:600;white-space:nowrap;}
-        .a-liverow-result{display:flex;align-items:center;gap:7px;min-width:0;justify-content:flex-end;}
-        .a-liverow-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;
-          color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0;}
-        .a-liverow-cand{font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;
-          text-overflow:ellipsis;max-width:90px;}
+        .a-liverow-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px;}
+        .a-liverow-seat{display:flex;align-items:baseline;gap:7px;min-width:0;}
+        .a-liverow-id{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);flex-shrink:0;}
+        .a-liverow-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .a-liverow-pending{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);
           text-transform:uppercase;flex-shrink:0;}
+        .a-liverow-cands{display:flex;flex-direction:column;gap:5px;}
+        .a-liverow-cands--empty{font-size:11.5px;color:var(--muted);font-style:italic;}
+        .a-liverow-cand-row{display:flex;align-items:center;gap:8px;}
+        .a-liverow-cand-row--runner{opacity:.68;}
+        .a-liverow-badge{font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:700;
+          color:#fff;padding:2px 6px;border-radius:4px;flex-shrink:0;min-width:38px;text-align:center;}
+        .a-liverow-badge--ghost{background:transparent !important;border:1px solid;}
+        .a-liverow-cname{font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;
+          text-overflow:ellipsis;flex:1;min-width:0;}
+        .a-liverow-votes{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+          color:var(--muted);flex-shrink:0;}
         .a-cd-lab b{color:var(--ink);}
         .a-counts{display:flex;gap:22px;margin-left:auto;}
         .a-count{text-align:center;min-width:54px;}
