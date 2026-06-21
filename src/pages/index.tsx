@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase, partyColor } from '@/lib/supabase'
+import { useTheme } from '@/hooks/useTheme'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Home / landing page — ApexInsights · AJK Election Analytics
@@ -96,6 +97,7 @@ function useCountdown() {
 
 export default function Home() {
   const c = useCountdown()
+  const { theme, toggle } = useTheme()
   const [tally, setTally] = useState(FALLBACK_TALLY)
 
   // Pull the real 2021 seat tally from Supabase; keep the fallback on any error.
@@ -129,7 +131,7 @@ export default function Home() {
   )
 
   return (
-    <div className="dirA">
+    <div className={`dirA${theme === 'dark' ? ' dark' : ''}`}>
       {/* top bar */}
       <header className="a-top">
         <div className="a-wrap a-topin">
@@ -143,7 +145,32 @@ export default function Home() {
           <nav className="a-nav">
             {NAV.map((n) => <a key={n.label} href={n.href}>{n.label}</a>)}
           </nav>
-          <div className="a-live"><span className="a-dot" /> LIVE FEED READY</div>
+          <div className="a-top-right">
+            <div className="a-live"><span className="a-dot" /> LIVE FEED READY</div>
+            <button onClick={toggle} className="a-toggle"
+              title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}>
+              {theme === 'dark' ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+              {theme === 'dark' ? 'LIGHT' : 'DARK'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -287,12 +314,28 @@ export default function Home() {
       <style jsx global>{`
         .dirA{font-family:'Hanken Grotesk',sans-serif;background:#F5F7FA;color:#0C1320;
           --ink:#0C1320;--muted:#5B6675;--line:#E2E7EE;--accent:#2C4A7C;--soft:#ECF1FF;
-          width:100%;-webkit-font-smoothing:antialiased;min-height:100vh;}
+          --card:#ffffff;--card-hover:#FAFBFD;--card-t:rgba(255,255,255,.85);
+          width:100%;-webkit-font-smoothing:antialiased;min-height:100vh;
+          transition:background-color .2s,color .2s;}
         .dirA *{box-sizing:border-box;}
         .dirA a{color:inherit;text-decoration:none;}
         .a-wrap{max-width:1120px;margin:0 auto;padding:0 48px;}
 
-        .a-top{border-bottom:1px solid var(--line);background:rgba(255,255,255,.85);
+        /* ── Dark mode — mirrors the dashboard's :root.dark tokens in
+           globals.css, scoped here since the landing page uses its own
+           styled-jsx variable namespace rather than the shared CSS vars. ── */
+        .dirA.dark{background:#2B3A55;color:#f1f5f9;
+          --ink:#f1f5f9;--muted:#94a3b8;--line:#2d3f55;--accent:#5B8DEF;--soft:#1B2A4A;
+          --card:#111827;--card-hover:#16202F;--card-t:rgba(17,24,39,.85);}
+
+        .a-top-right{display:flex;align-items:center;gap:14px;}
+        .a-toggle{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;
+          border-radius:8px;border:1px solid var(--line);background:var(--soft);
+          color:var(--muted);font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace;
+          cursor:pointer;transition:border-color .15s,color .15s;}
+        .a-toggle:hover{border-color:var(--accent);color:var(--accent);}
+
+        .a-top{border-bottom:1px solid var(--line);background:var(--card-t);
           backdrop-filter:blur(8px);position:sticky;top:0;z-index:5;}
         .a-topin{display:flex;align-items:center;justify-content:space-between;height:64px;}
         .a-brand{display:flex;align-items:center;gap:12px;}
@@ -321,11 +364,11 @@ export default function Home() {
           font-size:14.5px;font-weight:600;transition:transform .12s,box-shadow .15s,background .15s;}
         .a-btn-p{background:var(--accent);color:#fff;box-shadow:0 8px 20px -8px rgba(44,74,124,.6);}
         .a-btn-p:hover{transform:translateY(-1px);box-shadow:0 12px 26px -8px rgba(44,74,124,.7);}
-        .a-btn-s{border:1px solid var(--line);background:#fff;color:var(--ink);}
+        .a-btn-s{border:1px solid var(--line);background:var(--card);color:var(--ink);}
         .a-btn-s:hover{border-color:var(--accent);color:var(--accent);}
 
         .a-cd{display:flex;align-items:center;gap:30px;margin-top:46px;padding:22px 26px;
-          background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(12,19,32,.04);}
+          background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(12,19,32,.04);}
         .a-cd-lab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.4;max-width:14ch;}
         .a-cd-lab b{color:var(--ink);}
         .a-counts{display:flex;gap:22px;margin-left:auto;}
@@ -334,7 +377,7 @@ export default function Home() {
         .a-count-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:7px;display:block;}
         .a-colon{font-family:'IBM Plex Mono',monospace;font-size:30px;color:var(--line);align-self:flex-start;margin-top:2px;}
 
-        .a-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff;padding:40px 0;}
+        .a-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card);padding:40px 0;}
         .a-bandin{display:grid;grid-template-columns:1.1fr 1.4fr;gap:56px;align-items:center;}
         .a-stats{display:flex;gap:40px;}
         .a-stat .n{font-family:'Newsreader',serif;font-size:46px;font-weight:500;line-height:1;letter-spacing:-.02em;}
@@ -354,8 +397,8 @@ export default function Home() {
         .a-sec-s{font-size:14px;color:var(--muted);margin:6px 0 0;}
         .a-more{font-size:13.5px;color:var(--accent);font-weight:600;display:inline-flex;gap:6px;align-items:center;}
         .a-up{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
-        .a-upc{background:#fff;padding:28px 28px 30px;transition:background .15s;cursor:pointer;}
-        .a-upc:hover{background:#FAFBFD;}
+        .a-upc{background:var(--card);padding:28px 28px 30px;transition:background .15s;cursor:pointer;}
+        .a-upc:hover{background:var(--card-hover);}
         .a-upmeta{display:flex;align-items:center;gap:12px;margin-bottom:13px;}
         .a-uptag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--accent);background:var(--soft);padding:3px 9px;border-radius:5px;font-weight:500;}
         .a-update{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);}
@@ -363,7 +406,7 @@ export default function Home() {
         .a-upbody{font-size:14px;line-height:1.55;color:var(--muted);margin:0;}
 
         .a-prods{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
-        .a-prod{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;display:flex;gap:24px;align-items:flex-start;transition:border-color .15s,transform .12s,box-shadow .15s;}
+        .a-prod{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px;display:flex;gap:24px;align-items:flex-start;transition:border-color .15s,transform .12s,box-shadow .15s;}
         .a-prod:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 16px 32px -18px rgba(44,74,124,.45);}
         .a-prod-k{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent);border:1px solid var(--soft);background:var(--soft);width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:500;}
         .a-prod-n{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px;}
@@ -372,7 +415,7 @@ export default function Home() {
         .a-prod-mv{font-family:'Newsreader',serif;font-size:26px;font-weight:500;}
         .a-prod-ml{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
 
-        .a-foot{border-top:1px solid var(--line);background:#fff;padding:48px 0 40px;}
+        .a-foot{border-top:1px solid var(--line);background:var(--card);padding:48px 0 40px;}
         .a-footin{display:flex;justify-content:space-between;gap:40px;align-items:flex-start;}
         .a-foot-s{font-size:13px;line-height:1.6;color:var(--muted);max-width:48ch;}
         .a-foot-s b{color:var(--ink);}
