@@ -4,7 +4,7 @@ import { clsx } from 'clsx'
 import { useTheme } from '@/hooks/useTheme'
 
 const NAV = [
-  { href: '/',            label: '📡 Live Results'  },
+  { href: '/live',            label: '📡 Live Results'  },
   { href: '/records',     label: '📊 Records'       },
   { href: '/map',         label: '🌍 Map'           },
   { href: '/demography',  label: '🗺️ Voters Details' },
