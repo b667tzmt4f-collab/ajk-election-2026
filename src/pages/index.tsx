@@ -99,6 +99,7 @@ export default function Home() {
   const c = useCountdown()
   const { theme, toggle } = useTheme()
   const [tally, setTally] = useState(FALLBACK_TALLY)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   // Pull the real 2021 seat tally from Supabase; keep the fallback on any error.
   useEffect(() => {
@@ -170,8 +171,33 @@ export default function Home() {
               )}
               {theme === 'dark' ? 'LIGHT' : 'DARK'}
             </button>
+            <button onClick={() => setMenuOpen((v) => !v)} className="a-burger"
+              aria-label="Toggle menu" aria-expanded={menuOpen}>
+              {menuOpen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {menuOpen && (
+          <nav className="a-mobnav">
+            {NAV.map((n) => (
+              <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>
+            ))}
+          </nav>
+        )}
       </header>
 
       {/* hero */}
@@ -334,6 +360,10 @@ export default function Home() {
           color:var(--muted);font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace;
           cursor:pointer;transition:border-color .15s,color .15s;}
         .a-toggle:hover{border-color:var(--accent);color:var(--accent);}
+        .a-burger{display:none;align-items:center;justify-content:center;width:32px;height:32px;
+          border-radius:8px;border:1px solid var(--line);background:var(--soft);
+          color:var(--ink);cursor:pointer;}
+        .a-mobnav{display:none;}
 
         .a-top{border-bottom:1px solid var(--line);background:var(--card-t);
           backdrop-filter:blur(8px);position:sticky;top:0;z-index:5;}
@@ -426,6 +456,12 @@ export default function Home() {
 
         @media (max-width:860px){
           .a-nav{display:none;}
+          .a-burger{display:flex;}
+          .a-mobnav{display:flex;flex-direction:column;border-top:1px solid var(--line);
+            background:var(--card);padding:8px 24px 16px;}
+          .a-mobnav a{font-size:14.5px;font-weight:500;color:var(--ink);padding:11px 0;
+            border-bottom:1px solid var(--line);}
+          .a-mobnav a:last-child{border-bottom:none;}
           .a-h1{font-size:48px;}
           .a-bandin{grid-template-columns:1fr;gap:32px;}
           .a-up,.a-prods{grid-template-columns:1fr;}
@@ -446,6 +482,7 @@ export default function Home() {
           .a-top-right{gap:8px;flex-wrap:wrap;}
           .a-live{font-size:10px;white-space:nowrap;}
           .a-toggle{height:28px;padding:0 8px;font-size:10.5px;}
+          .a-mobnav{padding:8px 16px 14px;}
 
           .a-hero{padding:36px 0 32px;}
           .a-kick{font-size:10.5px;margin-bottom:16px;}
