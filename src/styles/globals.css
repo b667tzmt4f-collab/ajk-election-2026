@@ -1,22 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Light mode — default — warm cream (reference image 2) ── */
+/* ─────────────────────────────────────────────────────────────────────
+   APEXINSIGHTS DESIGN SYSTEM
+   Single source of truth for color tokens across the whole app.
+   These variables drive Layout.tsx, globals.css component classes,
+   and every page that imports <Layout> — restyle here, not per-page.
+   Palette + fonts intentionally match pages/index.tsx (landing page)
+   so the dashboard and the marketing front door feel like one product.
+   ───────────────────────────────────────────────────────────────────── */
+
+/* ── Light mode — default ── */
 :root {
-  --bg:        #f5f0e8;
+  --bg:        #F5F7FA;
   --bg2:       #ffffff;
-  --bg3:       #ede8df;
-  --border:    #d9d0c0;
-  --text:      #1a1108;
-  --text2:     #4a3f2f;
-  --text3:     #8a7a66;
+  --bg3:       #ECF1FF;
+  --border:    #E2E7EE;
+  --text:      #0C1320;
+  --text2:     #4a3f2f; /* legacy alias, see --muted below for new code */
+  --text3:     #5B6675;
   --card-bg:   #ffffff;
   --input-bg:  #faf7f2;
-  --shadow:    rgba(90,60,20,0.09);
-  --accent:    #6b2d0e;
-  --accent-h:  #8b3a10;
+  --shadow:    rgba(12,19,32,0.06);
+  --accent:    #1E50D8;
+  --accent-h:  #163FAF;
+  --muted:     #5B6675;
+  --soft:      #ECF1FF;
 }
 
 /* ── Dark mode ─────────────────────────────────────────────── */
@@ -27,12 +39,14 @@
   --border:    #2d3f55;
   --text:      #f1f5f9;
   --text2:     #94a3b8;
-  --text3:     #64748b;
+  --text3:     #94a3b8;
   --card-bg:   #111827;
   --input-bg:  #1e2a3a;
   --shadow:    rgba(0,0,0,0.35);
-  --accent:    #93c5fd;
-  --accent-h:  #60a5fa;
+  --accent:    #5B8DEF;
+  --accent-h:  #7BA3F2;
+  --muted:     #94a3b8;
+  --soft:      #1B2A4A;
 }
 
 * { box-sizing: border-box; }
@@ -40,27 +54,43 @@
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
+}
+
+/* Display/serif headings — used for page <h1>/<h2> titles to echo the
+   landing page's Newsreader hero type. Apply via className="font-display". */
+.font-display {
+  font-family: 'Newsreader', serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Monospace — used for figures, counters, stat values (matches landing
+   page's countdown digits and metric callouts). */
+.font-mono {
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;        /* 14px — matches landing page card radius */
   padding: 1.25rem;
-  box-shadow: 0 1px 4px var(--shadow);
+  box-shadow: 0 1px 2px var(--shadow);
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 5px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 input, select {

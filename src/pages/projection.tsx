@@ -1,7 +1,6 @@
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { partyColor } from '@/lib/supabase'
-import SeatCharts from '@/components/SeatCharts'
 
 const PROJECTION = [
   { seat_id:'LA-1', seat_name:'Mirpur-I (Dadyal)', division:'Mirpur',
@@ -31,16 +30,10 @@ const PIPELINE = [
 ]
 
 export default function Projection() {
-  // aggregate the sample calls by projected party (partial — not all 45 seats)
-  const projTally = PROJECTION.reduce<Record<string, number>>((acc, s) => {
-    acc[s.projected_winner] = (acc[s.projected_winner] || 0) + 1
-    return acc
-  }, {})
-
   return (
     <Layout>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1">🔮 2026 Projection</h2>
+        <h2 className="text-2xl font-bold mb-1">2026 Projection</h2>
         <p className="text-sm text-muted">
           Four-stage quantitative forecast. Currently in evidence-base mode — field survey and model pending.
         </p>
@@ -56,7 +49,7 @@ export default function Projection() {
               <span className="badge"
                     style={{ backgroundColor: p.status==='Active'?'#1B7A43':'var(--bg3)',
                              color: p.status==='Active'?'white':'var(--text2)' }}>
-                {p.status==='Active'?'✅ Active':'⏳ Pending'}
+                {p.status==='Active'?'Active':'Pending'}
               </span>
             </div>
             <p className="text-sm font-semibold mb-1">{p.label}</p>
@@ -77,23 +70,16 @@ export default function Projection() {
         <div className="flex items-center gap-3 mb-4">
           <h3 className="font-semibold">Sample Seat Calls</h3>
           <span className="badge" style={{ backgroundColor:'#7c3aed', color:'white' }}>
-            ⚠️ ILLUSTRATIVE — Not a final forecast
+            ILLUSTRATIVE — Not a final forecast
           </span>
         </div>
         <p className="text-xs text-muted mb-4">
           These calls are for demonstration only, based on 2021 results and basic ground assessment.
           Full model requires survey data and KPI scoring.
         </p>
-        <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
-          <SeatCharts
-            tally={projTally}
-            houseSize={45}
-            title={`Sample calls so far (${PROJECTION.length} of 45 — illustrative only)`}
-          />
-        </div>
         <div className="grid md:grid-cols-3 gap-3">
           {PROJECTION.map(s => {
-            const pc = partyColor(s.projected_winner)
+            const pc = `#${partyColor(s.projected_winner)}`
             return (
               <div key={s.seat_id} className="rounded-lg p-4"
                    style={{ border: `1px solid var(--border)`, borderLeft: `4px solid ${pc}` }}>

@@ -87,7 +87,7 @@ export default function Candidates() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-1">👤 2026 Candidate List</h2>
+      <h2 className="text-2xl font-bold mb-1">2026 Candidate List</h2>
       <p className="text-sm mb-5" style={{color:'var(--text2)'}}>
         Based on 2021 EC data · PTI shown as IND (ex-PTI) ·
         Will be updated when EC publishes 2026 final list
@@ -97,7 +97,7 @@ export default function Candidates() {
       {dbError && (
         <div className="card mb-4" style={{borderLeft:'4px solid #dc2626'}}>
           <p className="font-semibold text-sm mb-1" style={{color:'#dc2626'}}>
-            ⚠️ Database error: {dbError}
+            Database error: {dbError}
           </p>
           <p className="text-sm" style={{color:'var(--text2)'}}>
             Run <code style={{backgroundColor:'var(--bg3)', padding:'0 4px', borderRadius:3}}>
@@ -190,7 +190,7 @@ export default function Candidates() {
                         <td className="py-2.5 px-4 font-medium">{c.candidate_name}</td>
                         <td className="py-2.5 px-4">
                           <span className="badge text-white"
-                                style={{backgroundColor:partyColor(c.party_2026)}}>
+                                style={{backgroundColor:`#${partyColor(c.party_2026)}`}}>
                             {c.party_2026}
                           </span>
                         </td>

@@ -55,7 +55,7 @@ export default function History() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-2">📊 Past Elections</h2>
+      <h2 className="text-2xl font-bold mb-2">Past Elections</h2>
       <p className="text-sm text-gray-400 mb-6">
         AJK General Elections 2011, 2016, and 2021. Post-tribunal position for 2021:
         PTI 24, PPP 12, PML-N 7, AJKMC 1, JKPP 1.

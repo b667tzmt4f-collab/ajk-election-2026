@@ -71,7 +71,7 @@ export default function DataEntry() {
     }
 
     setSaving(false)
-    setSavedMsg(`✅ Saved ${updates.length} candidate votes for ${selectedSeat}`)
+    setSavedMsg(`Saved ${updates.length} candidate votes for ${selectedSeat}`)
     setTimeout(() => setSavedMsg(''), 4000)
   }
 
@@ -81,7 +81,7 @@ export default function DataEntry() {
       <Layout>
         <div className="max-w-sm mx-auto mt-24">
           <div className="card">
-            <h2 className="text-lg font-bold mb-4 text-center">✏️ Data Entry Login</h2>
+            <h2 className="text-lg font-bold mb-4 text-center">Data Entry Login</h2>
             <p className="text-sm text-gray-400 mb-4 text-center">
               For authorised data-entry team only
             </p>
@@ -111,7 +111,7 @@ export default function DataEntry() {
     <Layout>
       <div className="max-w-xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">✏️ Enter Live Results</h2>
+          <h2 className="text-2xl font-bold">Enter Live Results</h2>
           <button
             onClick={() => setAuthed(false)}
             className="text-xs text-gray-500 hover:text-gray-300"
@@ -173,7 +173,7 @@ export default function DataEntry() {
                 className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50
                            text-white rounded-lg py-2.5 font-semibold transition-colors"
               >
-                {saving ? 'Saving...' : '💾 Save Results'}
+                {saving ? 'Saving...' : 'Save Results'}
               </button>
               <button
                 onClick={() => setVotes({})}
