@@ -116,7 +116,7 @@ export default function MapView() {
   return (
     <Layout>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1">🗺️ Constituency Map</h2>
+        <h2 className="text-2xl font-bold mb-1 font-display">Constituency Map</h2>
         <p className="text-sm" style={{ color: 'var(--text2)' }}>
           AJK districts shaded by the dominant party in the 2021 general election.
           Tap a district for its seat breakdown. Constituency-level boundaries coming in a future update.
