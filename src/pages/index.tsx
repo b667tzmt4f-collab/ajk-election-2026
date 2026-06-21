@@ -454,26 +454,15 @@ export default function Home() {
         .a-foot-col a:hover{color:var(--accent);}
         .a-foot-h{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:700;margin-bottom:4px;}
 
-        @media (max-width:860px){
+        @media (max-width:768px){
           .a-nav{display:none;}
           .a-burger{display:flex;}
           .a-mobnav{display:flex;flex-direction:column;border-top:1px solid var(--line);
-            background:var(--card);padding:8px 24px 16px;}
+            background:var(--card);padding:8px 16px 14px;}
           .a-mobnav a{font-size:14.5px;font-weight:500;color:var(--ink);padding:11px 0;
             border-bottom:1px solid var(--line);}
           .a-mobnav a:last-child{border-bottom:none;}
-          .a-h1{font-size:48px;}
-          .a-bandin{grid-template-columns:1fr;gap:32px;}
-          .a-up,.a-prods{grid-template-columns:1fr;}
-          .a-wrap{padding:0 24px;}
-        }
 
-        /* ── True phone widths — the 860px breakpoint above only handles
-           tablet; nothing below it was sized for a ~375-430px viewport.
-           Fixes: header wrapping/overflow, oversized hero type, the
-           countdown box overflowing off-screen, stats band overflowing,
-           footer columns squeezing. ── */
-        @media (max-width:560px){
           .a-wrap{padding:0 16px;}
           .a-topin{height:auto;padding:10px 0;flex-wrap:wrap;row-gap:8px;}
           .a-brand{flex:1 1 auto;min-width:0;}
@@ -482,7 +471,6 @@ export default function Home() {
           .a-top-right{gap:8px;flex-wrap:wrap;}
           .a-live{font-size:10px;white-space:nowrap;}
           .a-toggle{height:28px;padding:0 8px;font-size:10.5px;}
-          .a-mobnav{padding:8px 16px 14px;}
 
           .a-hero{padding:36px 0 32px;}
           .a-kick{font-size:10.5px;margin-bottom:16px;}
@@ -501,6 +489,7 @@ export default function Home() {
           .a-colon{font-size:18px;}
 
           .a-band{padding:28px 0;}
+          .a-bandin{grid-template-columns:1fr;gap:32px;}
           .a-stats{gap:20px;flex-wrap:wrap;}
           .a-stat .n{font-size:32px;}
           .a-seats{grid-template-columns:repeat(9,1fr);max-width:none;}
@@ -508,6 +497,7 @@ export default function Home() {
           .a-sec{padding:40px 0;}
           .a-sec-h{flex-direction:column;align-items:flex-start;gap:8px;}
           .a-sec-t{font-size:24px;}
+          .a-up,.a-prods{grid-template-columns:1fr;}
           .a-upc{padding:16px;}
           .a-uptitle{font-size:16px;}
 
