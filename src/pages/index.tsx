@@ -492,7 +492,7 @@ export default function Home() {
           .a-btn{height:44px;padding:0 18px;font-size:13.5px;flex:1 1 auto;justify-content:center;}
 
           .a-cd{flex-direction:column;align-items:flex-start;gap:16px;margin-top:28px;
-            padding:18px;}
+            padding:16px;}
           .a-cd-lab{max-width:none;}
           .a-counts{margin-left:0;gap:10px;width:100%;justify-content:space-between;}
           .a-count{min-width:0;flex:1;}
@@ -508,10 +508,10 @@ export default function Home() {
           .a-sec{padding:40px 0;}
           .a-sec-h{flex-direction:column;align-items:flex-start;gap:8px;}
           .a-sec-t{font-size:24px;}
-          .a-upc{padding:20px;}
+          .a-upc{padding:16px;}
           .a-uptitle{font-size:16px;}
 
-          .a-prod{padding:20px;flex-direction:column;gap:14px;}
+          .a-prod{padding:16px;flex-direction:column;gap:14px;}
 
           .a-footin{flex-direction:column;gap:28px;}
           .a-foot-s{max-width:none;}
