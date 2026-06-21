@@ -9,7 +9,7 @@ import { useTheme } from '@/hooks/useTheme'
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Polling day for AJK General Election 2026 (edit when the EC confirms the date).
-const POLL_DATE = new Date('2026-07-12T08:00:00+05:00')
+const POLL_DATE = new Date('2026-07-27T09:00:00+05:00')
 
 // Static fallback tally (2021 post-tribunal). Used until Supabase returns data.
 const FALLBACK_TALLY: { party: string; seats: number }[] = [
@@ -203,7 +203,7 @@ export default function Home() {
       {/* hero */}
       <section className="a-hero">
         <div className="a-wrap">
-          <div className="a-kick"><span className="ln" /> General Election · 12 July 2026</div>
+          <div className="a-kick"><span className="ln" /> General Election · 27 July 2026</div>
           <h1 className="a-h1">Azad Kashmir <em>votes.</em> We count every number.</h1>
           <p className="a-lead">
             Live results, three decades of records and a transparent 2026 projection for all
