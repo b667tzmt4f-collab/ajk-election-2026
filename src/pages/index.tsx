@@ -431,6 +431,54 @@ export default function Home() {
           .a-up,.a-prods{grid-template-columns:1fr;}
           .a-wrap{padding:0 24px;}
         }
+
+        /* ── True phone widths — the 860px breakpoint above only handles
+           tablet; nothing below it was sized for a ~375-430px viewport.
+           Fixes: header wrapping/overflow, oversized hero type, the
+           countdown box overflowing off-screen, stats band overflowing,
+           footer columns squeezing. ── */
+        @media (max-width:560px){
+          .a-wrap{padding:0 16px;}
+          .a-topin{height:auto;padding:10px 0;flex-wrap:wrap;row-gap:8px;}
+          .a-brand{flex:1 1 auto;min-width:0;}
+          .a-bname{font-size:13px;}
+          .a-bsub{font-size:9.5px;}
+          .a-top-right{gap:8px;flex-wrap:wrap;}
+          .a-live{font-size:10px;white-space:nowrap;}
+          .a-toggle{height:28px;padding:0 8px;font-size:10.5px;}
+
+          .a-hero{padding:36px 0 32px;}
+          .a-kick{font-size:10.5px;margin-bottom:16px;}
+          .a-h1{font-size:34px;letter-spacing:-.01em;max-width:none;}
+          .a-lead{font-size:15.5px;margin-bottom:24px;}
+          .a-cta{flex-wrap:wrap;gap:10px;}
+          .a-btn{height:44px;padding:0 18px;font-size:13.5px;flex:1 1 auto;justify-content:center;}
+
+          .a-cd{flex-direction:column;align-items:flex-start;gap:16px;margin-top:28px;
+            padding:18px;}
+          .a-cd-lab{max-width:none;}
+          .a-counts{margin-left:0;gap:10px;width:100%;justify-content:space-between;}
+          .a-count{min-width:0;flex:1;}
+          .a-count-v{font-size:24px;}
+          .a-count-l{font-size:9px;margin-top:4px;}
+          .a-colon{font-size:18px;}
+
+          .a-band{padding:28px 0;}
+          .a-stats{gap:20px;flex-wrap:wrap;}
+          .a-stat .n{font-size:32px;}
+          .a-seats{grid-template-columns:repeat(9,1fr);max-width:none;}
+
+          .a-sec{padding:40px 0;}
+          .a-sec-h{flex-direction:column;align-items:flex-start;gap:8px;}
+          .a-sec-t{font-size:24px;}
+          .a-upc{padding:20px;}
+          .a-uptitle{font-size:16px;}
+
+          .a-prod{padding:20px;flex-direction:column;gap:14px;}
+
+          .a-footin{flex-direction:column;gap:28px;}
+          .a-foot-s{max-width:none;}
+        }
       `}</style>
     </div>
   )
