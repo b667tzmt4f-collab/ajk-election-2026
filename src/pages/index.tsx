@@ -20,6 +20,64 @@ const FALLBACK_TALLY: { party: string; seats: number }[] = [
   { party: 'JKPP', seats: 1 },
 ]
 
+// ── DUMMY 2026 live results — preview only ──────────────────────────────────
+// Hardcoded sample so the live panel renders its full design before polling
+// day. On 27 July, replace LIVE_DUMMY with the real useLiveResults() hook
+// (already built and used on /live) — same shape: seat, leader, runner-up.
+type LiveSeat = {
+  seat_id: string; name: string
+  leader: string; leader_party: string
+  runner: string; runner_party: string
+  reporting: boolean
+}
+const LIVE_DUMMY: LiveSeat[] = [
+  { seat_id:'LA-1', name:'Mirpur-I', leader:'Ch. Saood', leader_party:'IND (ex-PTI)', runner:'M. Aslam', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-2', name:'Mirpur-II', leader:'Q. Majeed', leader_party:'PPP', runner:'A. Khan', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-3', name:'Mirpur-III', leader:'F. Mughal', leader_party:'PML-N', runner:'S. Gilani', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-4', name:'Mirpur-IV', leader:'T. Khan', leader_party:'PPP', runner:'R. Abbasi', runner_party:'IND (ex-PTI)', reporting:true },
+  { seat_id:'LA-5', name:'Bhimber-I', leader:'A. Hameed', leader_party:'PML-N', runner:'N. Gujjar', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-6', name:'Bhimber-II', leader:'S. Ayub', leader_party:'PPP', runner:'K. Raja', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-7', name:'Bhimber-III', leader:'Ch. Anwar', leader_party:'IND (ex-PTI)', runner:'W. Khan', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-8', name:'Kotli-I', leader:'M. Latif', leader_party:'PPP', runner:'A. Mir', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-9', name:'Kotli-II', leader:'S. Chaudhry', leader_party:'PML-N', runner:'F. Khan', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-10', name:'Kotli-III', leader:'A. Naseer', leader_party:'IND (ex-PTI)', runner:'T. Mahmood', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-11', name:'Kotli-IV', leader:'R. Akbar', leader_party:'PPP', runner:'Z. Khan', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-12', name:'Kotli-V', leader:'N. Hussain', leader_party:'PML-N', runner:'S. Raja', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-13', name:'Kotli-VI', leader:'M. Ishaq', leader_party:'PPP', runner:'A. Gardezi', runner_party:'AJKMC', reporting:true },
+  { seat_id:'LA-14', name:'Bagh-I', leader:'S. Khan', leader_party:'PML-N', runner:'F. Abbasi', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-15', name:'Bagh-II', leader:'I. Hussain', leader_party:'PPP', runner:'K. Mir', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-16', name:'Bagh-III', leader:'A. Qureshi', leader_party:'IND (ex-PTI)', runner:'S. Khan', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-17', name:'Haveli', leader:'M. Tariq', leader_party:'PPP', runner:'R. Mughal', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-18', name:'Poonch-I', leader:'S. Yaqoob', leader_party:'PML-N', runner:'N. Khan', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-19', name:'Poonch-II', leader:'A. Hameed', leader_party:'PPP', runner:'F. Raja', runner_party:'IND (ex-PTI)', reporting:true },
+  { seat_id:'LA-20', name:'Poonch-III', leader:'K. Abbasi', leader_party:'IND (ex-PTI)', runner:'M. Khan', runner_party:'PPP', reporting:true },
+  { seat_id:'LA-21', name:'Poonch-IV', leader:'S. Ibrahim', leader_party:'PPP', runner:'A. Sadiq', runner_party:'PML-N', reporting:true },
+  { seat_id:'LA-22', name:'Poonch-V', leader:'B. Khan', leader_party:'PML-N', runner:'T. Gilani', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-23', name:'Poonch-VI', leader:'M. Yasin', leader_party:'PPP', runner:'S. Raja', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-24', name:'Poonch-VII', leader:'A. Khan', leader_party:'IND (ex-PTI)', runner:'N. Mir', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-25', name:'Neelum-I', leader:'S. Hussain', leader_party:'PPP', runner:'F. Khan', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-26', name:'Neelum-II', leader:'M. Din', leader_party:'PML-N', runner:'A. Shah', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-27', name:'Muzaffarabad-I', leader:'T. Awan', leader_party:'PPP', runner:'K. Khan', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-28', name:'Muzaffarabad-II', leader:'S. Mir', leader_party:'PML-N', runner:'R. Abbasi', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-29', name:'Muzaffarabad-III', leader:'A. Sheikh', leader_party:'PPP', runner:'M. Raja', runner_party:'IND (ex-PTI)', reporting:false },
+  { seat_id:'LA-30', name:'Muzaffarabad-IV', leader:'N. Khan', leader_party:'IND (ex-PTI)', runner:'S. Mughal', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-31', name:'Muzaffarabad-V', leader:'F. Hussain', leader_party:'PPP', runner:'A. Khan', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-32', name:'Muzaffarabad-VI', leader:'K. Mahmood', leader_party:'PML-N', runner:'T. Shah', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-33', name:'Muzaffarabad-VII', leader:'S. Raja', leader_party:'PPP', runner:'M. Din', runner_party:'JKPP', reporting:false },
+  { seat_id:'LA-34', name:'Jammu-I', leader:'A. Qadir', leader_party:'PML-N', runner:'N. Khan', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-35', name:'Jammu-II', leader:'S. Bhatti', leader_party:'PML-N', runner:'F. Raja', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-36', name:'Jammu-III', leader:'M. Iqbal', leader_party:'PPP', runner:'A. Khan', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-37', name:'Jammu-IV', leader:'R. Saleem', leader_party:'PPP', runner:'K. Mir', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-38', name:'Jammu-V', leader:'S. Khan', leader_party:'PML-N', runner:'T. Abbasi', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-39', name:'Jammu-VI', leader:'A. Hussain', leader_party:'PPP', runner:'N. Raja', runner_party:'AJKMC', reporting:false },
+  { seat_id:'LA-40', name:'Valley-I', leader:'M. Yousaf', leader_party:'PPP', runner:'S. Khan', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-41', name:'Valley-II', leader:'K. Ahmed', leader_party:'PML-N', runner:'F. Mir', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-42', name:'Valley-III', leader:'S. Gilani', leader_party:'PPP', runner:'A. Shah', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-43', name:'Valley-IV', leader:'N. Khan', leader_party:'JKPP', runner:'M. Raja', runner_party:'PPP', reporting:false },
+  { seat_id:'LA-44', name:'Valley-V', leader:'A. Mir', leader_party:'PPP', runner:'S. Khan', runner_party:'PML-N', reporting:false },
+  { seat_id:'LA-45', name:'Valley-VI', leader:'T. Hussain', leader_party:'PML-N', runner:'K. Abbasi', runner_party:'PPP', reporting:false },
+]
+
 const NAV = [
   { label: 'Live', href: '/live' },
   { label: 'Projection', href: '/projection' },
@@ -100,6 +158,15 @@ export default function Home() {
   const { theme, toggle } = useTheme()
   const [tally, setTally] = useState(FALLBACK_TALLY)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  // Tally reporting seats by leading party — recomputes if LIVE_DUMMY is
+  // swapped for real useLiveResults() data later.
+  const liveTallyMap: Record<string, number> = {}
+  for (const s of LIVE_DUMMY) {
+    if (!s.reporting) continue
+    liveTallyMap[s.leader_party] = (liveTallyMap[s.leader_party] || 0) + 1
+  }
+  const liveTally = Object.entries(liveTallyMap).sort((a, b) => b[1] - a[1])
 
   // Pull the real 2021 seat tally from Supabase; keep the fallback on any error.
   useEffect(() => {
@@ -202,25 +269,66 @@ export default function Home() {
 
       {/* hero */}
       <section className="a-hero">
-        <div className="a-wrap">
-          <div className="a-kick"><span className="ln" /> General Election · 27 July 2026</div>
-          <h1 className="a-h1">Azad Kashmir <em>votes.</em> We count every number.</h1>
-          <p className="a-lead">
-            Live results, three decades of records and a transparent 2026 projection for all
-            45 Legislative Assembly seats — built for the public, the press and the parties alike.
-          </p>
-          <div className="a-cta">
-            <a className="a-btn a-btn-p" href="/projection">See the 2026 projection →</a>
-            <a className="a-btn a-btn-s" href="/records">Explore the records</a>
+        <div className="a-wrap a-herogrid">
+          <div className="a-herotext">
+            <div className="a-kick"><span className="ln" /> General Election · 27 July 2026</div>
+            <h1 className="a-h1">Azad Kashmir <em>votes.</em> We count every number.</h1>
+            <p className="a-lead">
+              Live results, three decades of records and a transparent 2026 projection for all
+              45 Legislative Assembly seats — built for the public, the press and the parties alike.
+            </p>
+            <div className="a-cta">
+              <a className="a-btn a-btn-p" href="/projection">See the 2026 projection →</a>
+              <a className="a-btn a-btn-s" href="/records">Explore the records</a>
+            </div>
+
+            <div className="a-cd">
+              <div className="a-cd-lab">Polls open in<br /><b>Muzaffarabad &amp; 44 seats</b></div>
+              <div className="a-counts">
+                <Count v={c.d} l="Days" /><span className="a-colon">:</span>
+                <Count v={c.h} l="Hours" /><span className="a-colon">:</span>
+                <Count v={c.m} l="Min" /><span className="a-colon">:</span>
+                <Count v={c.s} l="Sec" />
+              </div>
+            </div>
           </div>
 
-          <div className="a-cd">
-            <div className="a-cd-lab">Polls open in<br /><b>Muzaffarabad &amp; 44 seats</b></div>
-            <div className="a-counts">
-              <Count v={c.d} l="Days" /><span className="a-colon">:</span>
-              <Count v={c.h} l="Hours" /><span className="a-colon">:</span>
-              <Count v={c.m} l="Min" /><span className="a-colon">:</span>
-              <Count v={c.s} l="Sec" />
+          {/* Live results panel — dummy data preview, see LIVE_DUMMY above */}
+          <div className="a-livepanel">
+            <div className="a-livepanel-h">
+              <div className="a-livepanel-title">
+                <span className="a-dot" /> Live Results
+              </div>
+              <span className="a-livepanel-tag">PREVIEW DATA</span>
+            </div>
+
+            <div className="a-livetally">
+              {liveTally.map(([party, seats]) => (
+                <div key={party} className="a-livetally-item">
+                  <span className="a-livetally-dot" style={{ background: partyColor(party) }} />
+                  <span className="a-livetally-p">{party}</span>
+                  <span className="a-livetally-n">{seats}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="a-liveseats">
+              {LIVE_DUMMY.map((s) => (
+                <div key={s.seat_id} className="a-liverow">
+                  <div className="a-liverow-seat">
+                    <span className="a-liverow-id">{s.seat_id}</span>
+                    <span className="a-liverow-name">{s.name}</span>
+                  </div>
+                  <div className="a-liverow-result">
+                    <span className="a-liverow-badge"
+                          style={{ background: partyColor(s.leader_party) }}>
+                      {s.leader_party}
+                    </span>
+                    <span className="a-liverow-cand">{s.leader}</span>
+                    {!s.reporting && <span className="a-liverow-pending">awaiting</span>}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -382,6 +490,8 @@ export default function Home() {
         @keyframes apulse{0%{box-shadow:0 0 0 0 rgba(228,0,43,.45)}70%{box-shadow:0 0 0 9px rgba(228,0,43,0)}100%{box-shadow:0 0 0 0 rgba(228,0,43,0)}}
 
         .a-hero{padding:64px 0 52px;}
+        .a-herogrid{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;align-items:start;}
+        .a-herotext{min-width:0;}
         .a-kick{display:inline-flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.16em;
           text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:22px;}
         .a-kick .ln{width:34px;height:1px;background:var(--accent);opacity:.5;}
@@ -400,6 +510,39 @@ export default function Home() {
         .a-cd{display:flex;align-items:center;gap:30px;margin-top:46px;padding:22px 26px;
           background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(12,19,32,.04);}
         .a-cd-lab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.4;max-width:14ch;}
+
+        /* ── Live results panel ── */
+        .a-livepanel{background:var(--card);border:1px solid var(--line);border-radius:16px;
+          overflow:hidden;box-shadow:0 1px 2px rgba(12,19,32,.04);position:sticky;top:88px;}
+        .a-livepanel-h{display:flex;align-items:center;justify-content:space-between;
+          padding:16px 20px;border-bottom:1px solid var(--line);}
+        .a-livepanel-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;}
+        .a-livepanel-title .a-dot{width:8px;height:8px;border-radius:50%;background:#E4002B;
+          animation:apulse 2s infinite;}
+        .a-livepanel-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;
+          color:var(--muted);background:var(--soft);padding:3px 8px;border-radius:5px;}
+
+        .a-livetally{display:flex;flex-wrap:wrap;gap:8px;padding:14px 20px;
+          border-bottom:1px solid var(--line);background:var(--bg);}
+        .a-livetally-item{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;}
+        .a-livetally-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+        .a-livetally-p{color:var(--muted);}
+        .a-livetally-n{color:var(--ink);}
+
+        .a-liveseats{max-height:480px;overflow-y:auto;}
+        .a-liverow{display:flex;align-items:center;justify-content:space-between;gap:10px;
+          padding:11px 20px;border-bottom:1px solid var(--line);}
+        .a-liverow:last-child{border-bottom:none;}
+        .a-liverow-seat{display:flex;flex-direction:column;min-width:0;flex-shrink:0;}
+        .a-liverow-id{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+        .a-liverow-name{font-size:12.5px;font-weight:600;white-space:nowrap;}
+        .a-liverow-result{display:flex;align-items:center;gap:7px;min-width:0;justify-content:flex-end;}
+        .a-liverow-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;
+          color:#fff;padding:2px 7px;border-radius:4px;flex-shrink:0;}
+        .a-liverow-cand{font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;
+          text-overflow:ellipsis;max-width:90px;}
+        .a-liverow-pending{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);
+          text-transform:uppercase;flex-shrink:0;}
         .a-cd-lab b{color:var(--ink);}
         .a-counts{display:flex;gap:22px;margin-left:auto;}
         .a-count{text-align:center;min-width:54px;}
@@ -473,6 +616,9 @@ export default function Home() {
           .a-toggle{height:28px;padding:0 8px;font-size:10.5px;}
 
           .a-hero{padding:36px 0 32px;}
+          .a-herogrid{grid-template-columns:1fr;gap:32px;}
+          .a-livepanel{position:static;}
+          .a-liveseats{max-height:360px;}
           .a-kick{font-size:10.5px;margin-bottom:16px;}
           .a-h1{font-size:34px;letter-spacing:-.01em;max-width:none;}
           .a-lead{font-size:15.5px;margin-bottom:24px;}
