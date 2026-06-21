@@ -494,7 +494,7 @@ export default function Home() {
           .a-stat .n{font-size:32px;}
           .a-seats{grid-template-columns:repeat(9,1fr);max-width:none;}
 
-          .a-sec{padding:40px 0;}
+          .a-sec{padding:40px 16px;}
           .a-sec-h{flex-direction:column;align-items:flex-start;gap:8px;}
           .a-sec-t{font-size:24px;}
           .a-up,.a-prods{grid-template-columns:1fr;}
