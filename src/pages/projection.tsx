@@ -33,7 +33,7 @@ export default function Projection() {
   return (
     <Layout>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1">2026 Projection</h2>
+        <h2 className="text-2xl font-bold mb-1 font-display">2026 Projection</h2>
         <p className="text-sm text-muted">
           Four-stage quantitative forecast. Currently in evidence-base mode — field survey and model pending.
         </p>

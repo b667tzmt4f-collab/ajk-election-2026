@@ -41,7 +41,7 @@ export default function Demography() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-1">2026 Voter Demography</h2>
+      <h2 className="text-2xl font-bold mb-1 font-display">2026 Voter Demography</h2>
       <p className="text-sm mb-6" style={{ color:'var(--text2)' }}>
         EC-notified electoral rolls, 22 May 2026
       </p>

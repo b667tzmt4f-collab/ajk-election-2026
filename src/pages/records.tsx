@@ -89,7 +89,7 @@ export default function Records() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-1">Election Records</h2>
+      <h2 className="text-2xl font-bold mb-1 font-display">Election Records</h2>
       <p className="text-sm mb-6" style={{color:'var(--text2)'}}>
         AJK General Elections 2011, 2016 and 2021 — official EC results
       </p>

@@ -81,7 +81,7 @@ export default function DataEntry() {
       <Layout>
         <div className="max-w-sm mx-auto mt-24">
           <div className="card">
-            <h2 className="text-lg font-bold mb-4 text-center">Data Entry Login</h2>
+            <h2 className="text-lg font-bold mb-4 text-center font-display">Data Entry Login</h2>
             <p className="text-sm text-gray-400 mb-4 text-center">
               For authorised data-entry team only
             </p>
@@ -111,7 +111,7 @@ export default function DataEntry() {
     <Layout>
       <div className="max-w-xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Enter Live Results</h2>
+          <h2 className="text-2xl font-bold font-display">Enter Live Results</h2>
           <button
             onClick={() => setAuthed(false)}
             className="text-xs text-gray-500 hover:text-gray-300"

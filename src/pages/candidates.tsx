@@ -87,7 +87,7 @@ export default function Candidates() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-1">2026 Candidate List</h2>
+      <h2 className="text-2xl font-bold mb-1 font-display">2026 Candidate List</h2>
       <p className="text-sm mb-5" style={{color:'var(--text2)'}}>
         Based on 2021 EC data · PTI shown as IND (ex-PTI) ·
         Will be updated when EC publishes 2026 final list

@@ -31,7 +31,7 @@ export default function LiveResults() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-bold">📡 Live Election Results</h2>
+          <h2 className="text-2xl font-bold font-display">Live Election Results</h2>
           <p className="text-sm mt-0.5" style={{color:"var(--text2)"}}>
             {lastUpdated
               ? `Last updated: ${lastUpdated.toLocaleTimeString()} · updates instantly`

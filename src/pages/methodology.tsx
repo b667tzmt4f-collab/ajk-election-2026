@@ -3,7 +3,7 @@ import Layout from '@/components/Layout'
 export default function Methodology() {
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-2">ℹ️ Methodology</h2>
+      <h2 className="text-2xl font-bold mb-2 font-display">Methodology</h2>
       <p className="text-sm text-gray-400 mb-6">
         AJK Election Analytics Platform · Version 1.0 · June 2026 ·
         Independent · Not affiliated with any party, government, or media organisation.
