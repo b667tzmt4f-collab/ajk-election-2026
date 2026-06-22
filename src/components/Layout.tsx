@@ -20,6 +20,7 @@ const NAV = [
   { href: '/demography',  label: 'Demography' },
   { href: '/candidates',  label: 'Candidates' },
   { href: '/enter',       label: 'Enter Results', special: true },
+  { href: '/score',       label: 'Score Seats',   special: true },
   { href: '/methodology', label: 'Methodology' },
 ]
 
