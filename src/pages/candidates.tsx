@@ -15,32 +15,8 @@ type C = {
 const numSort = (a: string, b: string) =>
   parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
 
-// Seat names lookup so we can show name alongside ID
-const SEAT_NAMES: Record<string, string> = {
-  'LA-1':'Mirpur-I (Dadyal)','LA-2':'Mirpur-II (Chakswari)',
-  'LA-3':'Mirpur-III (Mirpur City)','LA-4':'Mirpur-IV (Khari Sharif)',
-  'LA-5':'Bhimber-I (Barnala)','LA-6':'Bhimber-II (Samahni)',
-  'LA-7':'Bhimber-III (Bhimber City)','LA-8':'Kotli-I (Raj Mahal)',
-  'LA-9':'Kotli-II (Nakyal)','LA-10':'Kotli-III (Kotli City)',
-  'LA-11':'Kotli-IV (Sehnsa)','LA-12':'Kotli-V (Charhoi)',
-  'LA-13':'Kotli-VI (Khuiratta)','LA-14':'Bagh-I (Dheer Kot)',
-  'LA-15':'Bagh-II (Wastee)','LA-16':'Bagh-III',
-  'LA-17':'Haveli','LA-18':'Poonch-I (Abbaspur)',
-  'LA-19':'Poonch-II (Hajira)','LA-20':'Poonch-III (Ali Sojal)',
-  'LA-21':'Poonch-IV (Rawalakot City)','LA-22':'Poonch-V (Rawalakot)',
-  'LA-23':'Poonch-VI (Palandri)','LA-24':'Poonch-VII (Balouch)',
-  'LA-25':'Neelum-I (Upper Neelum)','LA-26':'Neelum-II (Athmuqam)',
-  'LA-27':'Muzaffarabad-I (Naseerabad)','LA-28':'Muzaffarabad-II (Lachrat)',
-  'LA-29':'Muzaffarabad-III (City)','LA-30':'Muzaffarabad-IV (Hattian)',
-  'LA-31':'Muzaffarabad-V (Khawra)','LA-32':'Muzaffarabad-VI (Hattian)',
-  'LA-33':'Muzaffarabad-VII (Leepa)','LA-34':'Jammu-I',
-  'LA-35':'Jammu-II (Gujranwala)','LA-36':'Jammu-III (Sialkot)',
-  'LA-37':'Jammu-IV (Narowal)','LA-38':'Jammu-V (Gujrat)',
-  'LA-39':'Jammu-VI (Rawalpindi)','LA-40':'Kashmir Valley-I',
-  'LA-41':'Kashmir Valley-II','LA-42':'Kashmir Valley-III',
-  'LA-43':'Kashmir Valley-IV','LA-44':'Kashmir Valley-V',
-  'LA-45':'Kashmir Valley-VI',
-}
+// Seat names — single source of truth, shared across all pages
+import { SEAT_NAMES } from '@/lib/seatNames'
 
 export default function Candidates() {
   const [candidates, setCandidates] = useState<C[]>([])
@@ -190,7 +166,7 @@ export default function Candidates() {
                         <td className="py-2.5 px-4 font-medium">{c.candidate_name}</td>
                         <td className="py-2.5 px-4">
                           <span className="badge text-white"
-                                style={{backgroundColor:partyColor(c.party_2026)}}>
+                                style={{backgroundColor:`#${partyColor(c.party_2026)}`}}>
                             {c.party_2026}
                           </span>
                         </td>
