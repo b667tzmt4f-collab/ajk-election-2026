@@ -17,16 +17,29 @@ import { supabase, partyColor } from '@/lib/supabase'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SEAT_TO_DISTRICT: Record<string, string> = {
-  'LA-1': 'Mirpur', 'LA-2': 'Mirpur', 'LA-3': 'Mirpur', 'LA-4': 'Mirpur',
+  // Mirpur — LA-1 to LA-4
+  'LA-1': 'Mirpur',  'LA-2': 'Mirpur',  'LA-3': 'Mirpur',  'LA-4': 'Mirpur',
+  // Bhimber — LA-5 to LA-7
   'LA-5': 'Bhimber', 'LA-6': 'Bhimber', 'LA-7': 'Bhimber',
-  'LA-8': 'Kotli', 'LA-9': 'Kotli', 'LA-10': 'Kotli', 'LA-11': 'Kotli', 'LA-12': 'Kotli',
-  'LA-13': 'Poonch', 'LA-14': 'Poonch', 'LA-15': 'Poonch',
-  'LA-16': 'Sudhnoti', 'LA-17': 'Sudhnoti',
-  'LA-18': 'Bagh', 'LA-19': 'Bagh',
-  'LA-20': 'Haveli',
-  'LA-21': 'Jhelum Valley', 'LA-22': 'Jhelum Valley',
-  'LA-23': 'Muzaffarabad', 'LA-24': 'Muzaffarabad', 'LA-25': 'Muzaffarabad', 'LA-26': 'Muzaffarabad',
-  'LA-27': 'Neelum',
+  // Kotli — LA-8 to LA-13
+  'LA-8': 'Kotli',   'LA-9': 'Kotli',   'LA-10': 'Kotli',
+  'LA-11': 'Kotli',  'LA-12': 'Kotli',  'LA-13': 'Kotli',
+  // Bagh — LA-14 to LA-16
+  'LA-14': 'Bagh',   'LA-15': 'Bagh',   'LA-16': 'Bagh',
+  // Haveli — LA-17
+  'LA-17': 'Haveli',
+  // Poonch — LA-18 to LA-22
+  'LA-18': 'Poonch', 'LA-19': 'Poonch', 'LA-20': 'Poonch',
+  'LA-21': 'Poonch', 'LA-22': 'Poonch',
+  // Sudhnoti — LA-23 to LA-24
+  'LA-23': 'Sudhnoti', 'LA-24': 'Sudhnoti',
+  // Neelum — LA-25 to LA-26
+  'LA-25': 'Neelum',   'LA-26': 'Neelum',
+  // Muzaffarabad — LA-27, LA-28, LA-29, LA-31
+  'LA-27': 'Muzaffarabad', 'LA-28': 'Muzaffarabad',
+  'LA-29': 'Muzaffarabad', 'LA-31': 'Muzaffarabad',
+  // Jhelum Valley — LA-30, LA-32, LA-33
+  'LA-30': 'Jhelum Valley', 'LA-32': 'Jhelum Valley', 'LA-33': 'Jhelum Valley',
 }
 
 const DISTRICTS = [
