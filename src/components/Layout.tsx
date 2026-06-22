@@ -72,7 +72,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     fontSize: 13,
                     fontWeight: 500,
                     fontFamily: "'Hanken Grotesk', sans-serif",
-                    color: active ? 'var(--accent)' : item.special ? 'var(--accent)' : 'var(--text2)',
+                    color: active ? 'var(--accent)' : 'var(--text2)',
                     textDecoration: 'none',
                     whiteSpace: 'nowrap',
                     transition: 'color .15s',
