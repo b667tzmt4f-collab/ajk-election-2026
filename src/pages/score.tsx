@@ -143,7 +143,6 @@ export default function ScorePage() {
     setSaving(true); setSavedMsg('')
     const seat = { ...scores[selected] }
     seat.kpi_score = computeKpi(seat, seat.party_weight_pct, seat.party_score)
-    seat.scored_at = new Date().toISOString()
     const { error } = await supabase.from('seat_scores').upsert(seat, { onConflict: 'seat_id' })
     setSaving(false)
     setSavedMsg(error ? `Error: ${error.message}` : `✓ ${selected} saved`)
