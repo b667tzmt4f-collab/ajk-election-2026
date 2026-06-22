@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase, partyColor } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -211,7 +212,7 @@ export default function Home() {
             </div>
           </div>
           <nav className="a-nav">
-            {NAV.map((n) => <a key={n.label} href={n.href}>{n.label}</a>)}
+            {NAV.map((n) => <Link key={n.label} href={n.href}>{n.label}</Link>)}
           </nav>
           <div className="a-top-right">
             <div className="a-live"><span className="a-dot" /> LIVE FEED READY</div>
@@ -261,7 +262,7 @@ export default function Home() {
         {menuOpen && (
           <nav className="a-mobnav">
             {NAV.map((n) => (
-              <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>
+              <Link key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</Link>
             ))}
           </nav>
         )}
@@ -459,11 +460,6 @@ export default function Home() {
             <a href="/map">Constituency map</a>
             <a href="/methodology">Methodology</a>
           </div>
-          <div className="a-foot-col">
-            <div className="a-foot-h" style={{ color:'var(--muted)', opacity:0.6 }}>Admin</div>
-            <a href="/enter" style={{ opacity:0.6 }}>Enter results</a>
-            <a href="/score" style={{ opacity:0.6 }}>Score seats</a>
-          </div>
         </div>
       </footer>
 
@@ -505,7 +501,7 @@ export default function Home() {
           font-family:'Newsreader',serif;font-size:18px;}
         .a-bname{font-weight:700;font-size:15px;letter-spacing:-.01em;}
         .a-bsub{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
-        .a-nav{display:flex;gap:18px;}
+        .a-nav{display:flex;gap:26px;}
         .a-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:color .15s;}
         .a-nav a:hover{color:var(--accent);}
         .a-live{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#B42318;}
