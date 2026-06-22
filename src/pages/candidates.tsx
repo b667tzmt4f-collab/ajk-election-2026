@@ -190,7 +190,7 @@ export default function Candidates() {
                         <td className="py-2.5 px-4 font-medium">{c.candidate_name}</td>
                         <td className="py-2.5 px-4">
                           <span className="badge text-white"
-                                style={{backgroundColor:`#${partyColor(c.party_2026)}`}}>
+                                style={{backgroundColor:partyColor(c.party_2026)}}>
                             {c.party_2026}
                           </span>
                         </td>
