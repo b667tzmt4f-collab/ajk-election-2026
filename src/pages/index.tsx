@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import NextLink from 'next/link'
-import Layout from '@/components/Layout'
 import { supabase, partyColor } from '@/lib/supabase'
+import { useTheme } from '@/hooks/useTheme'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Home / landing page — ApexInsights · AJK Election Analytics
@@ -86,7 +85,6 @@ const NAV = [
   { label: 'Map', href: '/map' },
   { label: 'Demography', href: '/demography' },
   { label: 'Candidates', href: '/candidates' },
-  { label: 'Score', href: '/score' },
   { label: 'Methodology', href: '/methodology' },
 ]
 
@@ -157,6 +155,7 @@ function useCountdown() {
 
 export default function Home() {
   const c = useCountdown()
+  const { theme, toggle } = useTheme()
   const [tally, setTally] = useState(FALLBACK_TALLY)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -200,7 +199,73 @@ export default function Home() {
   )
 
   return (
-    <Layout>
+    <div className={`dirA${theme === 'dark' ? ' dark' : ''}`}>
+      {/* top bar */}
+      <header className="a-top">
+        <div className="a-wrap a-topin">
+          <div className="a-brand">
+            <div className="a-mark">A</div>
+            <div>
+              <div className="a-bname">AJK Election Analytics</div>
+              <div className="a-bsub">An ApexInsights platform</div>
+            </div>
+          </div>
+          <nav className="a-nav">
+            {NAV.map((n) => <a key={n.label} href={n.href}>{n.label}</a>)}
+          </nav>
+          <div className="a-top-right">
+            <div className="a-live"><span className="a-dot" /> LIVE FEED READY</div>
+            <button onClick={toggle} className="a-toggle"
+              title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}>
+              {theme === 'dark' ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+              {theme === 'dark' ? 'LIGHT' : 'DARK'}
+            </button>
+            <button onClick={() => setMenuOpen((v) => !v)} className="a-burger"
+              aria-label="Toggle menu" aria-expanded={menuOpen}>
+              {menuOpen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen && (
+          <nav className="a-mobnav">
+            {NAV.map((n) => (
+              <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>
+            ))}
+          </nav>
+        )}
+      </header>
 
       {/* hero */}
       <section className="a-hero">
@@ -364,6 +429,43 @@ export default function Home() {
         </div>
       </section>
 
+      {/* footer */}
+      <footer className="a-foot">
+        <div className="a-wrap a-footin">
+          <div>
+            <div className="a-brand" style={{ marginBottom: 16 }}>
+              <div className="a-mark">A</div>
+              <div>
+                <div className="a-bname">AJK Election Analytics</div>
+                <div className="a-bsub">An ApexInsights platform</div>
+              </div>
+            </div>
+            <p className="a-foot-s">
+              An <b>independent, data-driven</b> platform from <b>ApexInsights</b>, published for
+              public reference. Not affiliated with any political party, government body or media
+              organisation. Every figure is auditable against its cited source.
+            </p>
+            <p className="a-foot-s" style={{ marginTop: 16, fontSize: 12 }}>© 2026 ApexInsights. All rights reserved.</p>
+          </div>
+          <div className="a-foot-col">
+            <div className="a-foot-h">Data</div>
+            <a href="/records">Election records</a>
+            <a href="/demography">Voter demography</a>
+            <a href="/candidates">Candidate list</a>
+          </div>
+          <div className="a-foot-col">
+            <div className="a-foot-h">Analysis</div>
+            <a href="/projection">2026 projection</a>
+            <a href="/map">Constituency map</a>
+            <a href="/methodology">Methodology</a>
+          </div>
+          <div className="a-foot-col">
+            <div className="a-foot-h" style={{ color:'var(--muted)', opacity:0.6 }}>Admin</div>
+            <a href="/enter" style={{ opacity:0.6 }}>Enter results</a>
+            <a href="/score" style={{ opacity:0.6 }}>Score seats</a>
+          </div>
+        </div>
+      </footer>
 
       {/* All styling lives here — styled-jsx is built into Next.js. */}
       <style jsx global>{`
@@ -403,7 +505,7 @@ export default function Home() {
           font-family:'Newsreader',serif;font-size:18px;}
         .a-bname{font-weight:700;font-size:15px;letter-spacing:-.01em;}
         .a-bsub{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
-        .a-nav{display:flex;gap:26px;}
+        .a-nav{display:flex;gap:18px;}
         .a-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:color .15s;}
         .a-nav a:hover{color:var(--accent);}
         .a-live{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#B42318;}
@@ -580,6 +682,6 @@ export default function Home() {
           .a-foot-s{max-width:none;}
         }
       `}</style>
-    </Layout>
+    </div>
   )
 }
