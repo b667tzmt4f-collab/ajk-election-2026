@@ -60,10 +60,12 @@ body {
 }
 
 /* Display/serif headings — used for page <h1>/<h2> titles to echo the
-   landing page's Newsreader hero type. Apply via className="font-display". */
+   landing page's Newsreader hero type. Apply via className="font-display".
+   !important ensures weight 500 wins over Tailwind's font-bold (700) when
+   both appear on the same element e.g. "text-2xl font-bold font-display". */
 .font-display {
   font-family: 'Newsreader', serif;
-  font-weight: 500;
+  font-weight: 500 !important;
   letter-spacing: -0.02em;
 }
 

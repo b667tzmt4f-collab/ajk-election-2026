@@ -42,7 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold font-display text-lg"
                  style={{ backgroundColor: 'var(--accent)' }}>A</div>
             <div className="leading-tight">
-              <h1 className="text-sm md:text-base font-bold" style={{ color: 'var(--text)' }}>
+              <h1 className="text-sm md:text-base font-medium" style={{ color: 'var(--text)', fontWeight: 500 }}>
                 AJK Election Analytics
               </h1>
               <p className="text-[10px] md:text-xs uppercase tracking-wide" style={{ color: 'var(--text3)' }}>
@@ -61,7 +61,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     color: active ? 'var(--accent)'
                       : item.special ? 'var(--accent)'
                       : 'var(--text2)',
-                    fontWeight: active || item.special ? 600 : 500,
+                    fontWeight: 500,
+                    fontFamily: '"Hanken Grotesk", sans-serif',
                   }}>
                   {item.label}
                 </Link>
