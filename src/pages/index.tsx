@@ -214,7 +214,7 @@ export default function Home() {
             {NAV.map((n) => <a key={n.label} href={n.href}>{n.label}</a>)}
           </nav>
           <div className="a-top-right">
-            <div className="a-live"><span className="a-dot" /> LIVE FEED READY</div>
+            <div className="a-live"><span className="a-dot" /> Live</div>
             <button onClick={toggle} className="a-toggle"
               title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}>
               {theme === 'dark' ? (

@@ -90,7 +90,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <span style={{ width:8, height:8, borderRadius:'50%',
                              backgroundColor:'#E4002B',
                              animation:'pulse 1.5s infinite' }} />
-              <span className="layout-livetext">LIVE FEED READY</span>
+              Live
             </div>
 
             <button onClick={toggle} style={{
@@ -219,9 +219,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         @media (max-width: 768px) {
           .layout-desknav { display: none !important; }
           .layout-burger  { display: flex !important; }
-          .layout-livetext { display: none; }
           .layout-darktext { display: none; }
-          .layout-live { gap: 0 !important; }
         }
         /* Kill any link underlines in header/footer */
         header a, footer a { text-decoration: none !important; border-bottom: none !important; }
