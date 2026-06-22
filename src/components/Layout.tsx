@@ -32,37 +32,51 @@ export default function Layout({ children }: { children: React.ReactNode }) {
          style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
 
       <header className="sticky top-0 z-50"
-        style={{ backgroundColor: 'var(--card-bg)',
-                 borderBottom: '1px solid var(--border)',
-                 backdropFilter: 'blur(8px)',
-                 opacity: 0.97 }}>
-        <div className="max-w-7xl mx-auto px-4 py-3
-                         flex items-center justify-between gap-3 flex-wrap">
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold font-display text-lg"
-                 style={{ backgroundColor: 'var(--accent)' }}>A</div>
-            <div className="leading-tight">
-              <h1 className="text-sm md:text-base font-medium" style={{ color: 'var(--text)', fontWeight: 500 }}>
+        style={{
+          backgroundColor: 'var(--card-bg)',
+          borderBottom: '1px solid var(--border)',
+          backdropFilter: 'blur(8px)',
+        }}>
+        <div style={{
+          maxWidth: 1120,
+          margin: '0 auto',
+          padding: '0 48px',
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 24,
+        }}>
+          <Link href="/" style={{ display:'flex', alignItems:'center', gap:12, textDecoration:'none', flexShrink:0 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              backgroundColor: 'var(--accent)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontWeight: 800, fontFamily: "'Newsreader', serif", fontSize: 18,
+            }}>A</div>
+            <div style={{ lineHeight: 1.25 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.01em', color: 'var(--text)', fontFamily: "'Hanken Grotesk', sans-serif" }}>
                 AJK Election Analytics
-              </h1>
-              <p className="text-[10px] md:text-xs uppercase tracking-wide" style={{ color: 'var(--text3)' }}>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', letterSpacing: '.04em', textTransform: 'uppercase', fontFamily: "'Hanken Grotesk', sans-serif" }}>
                 An ApexInsights Platform
-              </p>
+              </div>
             </div>
           </Link>
 
-          <nav className="flex items-center gap-5 overflow-x-auto scrollbar-hide">
+          <nav style={{ display:'flex', alignItems:'center', gap:26, overflowX:'auto' }}>
             {NAV.map(item => {
               const active = pathname === item.href
               return (
                 <Link key={item.href} href={item.href}
-                  className="text-sm whitespace-nowrap transition-colors"
                   style={{
-                    color: active ? 'var(--accent)'
-                      : item.special ? 'var(--accent)'
-                      : 'var(--text2)',
+                    fontSize: 13.5,
                     fontWeight: 500,
-                    fontFamily: '"Hanken Grotesk", sans-serif',
+                    fontFamily: "'Hanken Grotesk', sans-serif",
+                    color: active ? 'var(--accent)' : item.special ? 'var(--accent)' : 'var(--text2)',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    transition: 'color .15s',
                   }}>
                   {item.label}
                 </Link>
@@ -70,32 +84,34 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold font-mono"
-                 style={{ color: '#B42318' }}>
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#E4002B' }} />
+          <div style={{ display:'flex', alignItems:'center', gap:14, flexShrink:0 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:7, fontSize:12, fontWeight:600, color:'#B42318', fontFamily:"'IBM Plex Mono', monospace" }}
+                 className="hidden sm:flex">
+              <span style={{ width:8, height:8, borderRadius:'50%', backgroundColor:'#E4002B', animation:'pulse 1.5s infinite' }} />
               LIVE FEED READY
             </div>
 
             <button onClick={toggle}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold
-                         font-mono transition-colors"
-              style={{ backgroundColor: 'var(--bg3)',
-                       border: '1px solid var(--border)',
-                       color: 'var(--text2)' }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 10px', borderRadius: 8,
+                fontSize: 12, fontWeight: 600,
+                fontFamily: "'IBM Plex Mono', monospace",
+                backgroundColor: 'var(--bg3)',
+                border: '1px solid var(--border)',
+                color: 'var(--text2)',
+                cursor: 'pointer',
+                transition: 'background .15s',
+              }}
               title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}>
               {theme === 'dark' ? (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
               ) : (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -109,7 +125,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+      <main style={{ maxWidth: 1120, margin: '0 auto', width: '100%', padding: '24px 48px 48px' }}>
         {children}
       </main>
 
