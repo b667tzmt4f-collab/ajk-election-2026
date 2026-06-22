@@ -85,7 +85,7 @@ const NAV = [
   { label: 'Map', href: '/map' },
   { label: 'Demography', href: '/demography' },
   { label: 'Candidates', href: '/candidates' },
-  { label: 'Score Seats', href: '/score' },
+  { label: 'Score', href: '/score' },
   { label: 'Methodology', href: '/methodology' },
 ]
 
@@ -501,7 +501,7 @@ export default function Home() {
           font-family:'Newsreader',serif;font-size:18px;}
         .a-bname{font-weight:700;font-size:15px;letter-spacing:-.01em;}
         .a-bsub{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
-        .a-nav{display:flex;gap:26px;}
+        .a-nav{display:flex;gap:18px;}
         .a-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:color .15s;}
         .a-nav a:hover{color:var(--accent);}
         .a-live{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#B42318;}

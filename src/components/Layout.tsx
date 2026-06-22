@@ -20,7 +20,7 @@ const NAV = [
   { href: '/demography',  label: 'Demography' },
   { href: '/candidates',  label: 'Candidates' },
   { href: '/enter',       label: 'Enter Results', special: true },
-  { href: '/score',       label: 'Score Seats',   special: true },
+  { href: '/score',       label: 'Score',   special: true },
   { href: '/methodology', label: 'Methodology' },
 ]
 
@@ -65,13 +65,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          <nav style={{ display:'flex', alignItems:'center', gap:20, flexWrap:'nowrap' }}>
+          <nav style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'nowrap', overflow:'hidden', flexShrink:1, minWidth:0 }}>
             {NAV.map(item => {
               const active = pathname === item.href
               return (
                 <Link key={item.href} href={item.href}
                   style={{
-                    fontSize: 13.5,
+                    fontSize: 13,
                     fontWeight: 500,
                     fontFamily: "'Hanken Grotesk', sans-serif",
                     color: active ? 'var(--accent)' : item.special ? 'var(--accent)' : 'var(--text2)',
@@ -80,6 +80,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     transition: 'color .15s',
                     borderBottom: 'none',
                     outline: 'none',
+                    flexShrink: 0,
                   }}>
                   {item.label}
                 </Link>
