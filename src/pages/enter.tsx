@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import { supabase, Candidate } from '@/lib/supabase'
+import { syncFromSheet, SyncResult } from '@/lib/sheetSync'
 
 const ENTRY_PASSWORD = process.env.NEXT_PUBLIC_ENTRY_PASSWORD || 'ajk2026'
+
+// Published Google Sheet CSV URL — see lib/sheetSync.ts for the full
+// publish/format contract (seat_id, candidate_name, votes_2026 columns).
+// Override via NEXT_PUBLIC_RESULTS_SHEET_CSV_URL in .env.local / Vercel env
+// vars if the sheet is ever recreated and gets a new URL.
+const RESULTS_SHEET_CSV_URL =
+  process.env.NEXT_PUBLIC_RESULTS_SHEET_CSV_URL ||
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE3KCdMVObOw8ty3BjIfeE8N6FcIs0MkBro6GBcUycGArczznrMAtWzN5K3vYaOaSUt2XQ46TcW-Nn/pub?output=csv'
 
 export default function DataEntry() {
   const [authed, setAuthed]       = useState(false)
@@ -14,6 +23,11 @@ export default function DataEntry() {
   const [votes, setVotes]               = useState<Record<number, string>>({})
   const [saving, setSaving]             = useState(false)
   const [savedMsg, setSavedMsg]         = useState('')
+
+  // ── Sheet sync state ──────────────────────────────────────────────────────
+  const [syncing, setSyncing]         = useState(false)
+  const [syncResult, setSyncResult]   = useState<SyncResult | null>(null)
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null)
 
   // Load seat list
   useEffect(() => {
@@ -75,6 +89,30 @@ export default function DataEntry() {
     setTimeout(() => setSavedMsg(''), 4000)
   }
 
+  async function handleSync() {
+    setSyncing(true)
+    setSyncResult(null)
+    const result = await syncFromSheet(RESULTS_SHEET_CSV_URL)
+    setSyncResult(result)
+    setSyncing(false)
+    if (!result.error) {
+      setLastSyncedAt(new Date())
+      // Refresh the currently-open seat's vote inputs so the manual-entry
+      // form below reflects whatever the sync just wrote, in case the same
+      // seat is open for a spot-check.
+      if (selectedSeat) {
+        const { data } = await supabase
+          .from('candidates').select('*').eq('seat_id', selectedSeat).order('rank_2021')
+        if (data) {
+          setCandidates(data)
+          const v: Record<number, string> = {}
+          for (const c of data) v[c.id] = c.votes_2026 > 0 ? String(c.votes_2026) : ''
+          setVotes(v)
+        }
+      }
+    }
+  }
+
   // ── Login screen ────────────────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -120,6 +158,71 @@ export default function DataEntry() {
           </button>
         </div>
 
+        {/* ── Sheet sync — primary election-night workflow ─────────────────── */}
+        <div className="card mb-4" style={{ borderLeft: '4px solid #16a34a' }}>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">
+              Sync from Google Sheet
+            </h3>
+            {lastSyncedAt && (
+              <span className="text-xs text-gray-500">
+                Last synced {lastSyncedAt.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            Pulls the published sheet's <code className="text-gray-400">votes_2026</code> column
+            and updates every matched candidate. Blank cells are left untouched —
+            type <code className="text-gray-400">0</code> explicitly to reset a result.
+          </p>
+
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50
+                       text-white rounded-lg py-2.5 font-semibold transition-colors"
+          >
+            {syncing ? 'Syncing…' : 'Sync Now'}
+          </button>
+
+          {syncResult && (
+            <div className="mt-4 text-sm space-y-2">
+              {syncResult.error ? (
+                <p className="text-red-400 font-medium">⚠ {syncResult.error}</p>
+              ) : (
+                <>
+                  <p className="text-green-400 font-medium">
+                    ✓ Updated {syncResult.matched} candidate{syncResult.matched === 1 ? '' : 's'}
+                    {' '}from {syncResult.totalRows} sheet rows
+                  </p>
+                  {syncResult.skippedBlank > 0 && (
+                    <p className="text-gray-500 text-xs">
+                      {syncResult.skippedBlank} row{syncResult.skippedBlank === 1 ? '' : 's'} skipped
+                      (blank votes_2026 — not yet reported)
+                    </p>
+                  )}
+                  {syncResult.unmatched.length > 0 && (
+                    <div className="text-amber-400 text-xs">
+                      <p className="font-medium mb-1">
+                        ⚠ {syncResult.unmatched.length} row{syncResult.unmatched.length === 1 ? '' : 's'}
+                        {' '}didn't match any candidate — check spelling/seat_id:
+                      </p>
+                      <ul className="list-disc list-inside space-y-0.5 text-gray-500">
+                        {syncResult.unmatched.slice(0, 10).map((r, i) => (
+                          <li key={i}>{r.seat_id} — {r.candidate_name}</li>
+                        ))}
+                        {syncResult.unmatched.length > 10 && (
+                          <li>…and {syncResult.unmatched.length - 10} more</li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="card mb-4">
           <label className="block text-sm text-gray-400 mb-1">Select Constituency</label>
           <select
@@ -138,9 +241,12 @@ export default function DataEntry() {
 
         {candidates.length > 0 && (
           <div className="card">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">
-              Enter vote counts — {selectedSeat}
+            <h3 className="text-sm font-semibold text-gray-300 mb-1 uppercase tracking-wide">
+              Manual entry — {selectedSeat}
             </h3>
+            <p className="text-xs text-gray-600 mb-4">
+              Use this for one-off corrections. For full election-night entry, use Sync above.
+            </p>
 
             <div className="space-y-3">
               {candidates.map((c) => (
