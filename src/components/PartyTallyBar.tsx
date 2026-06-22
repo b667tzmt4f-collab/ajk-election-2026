@@ -15,7 +15,8 @@ export default function PartyTallyBar({ tally, majority = 23 }: Props) {
       {sorted.map(([party, seats]) => (
         <div key={party} className="flex items-center gap-3">
           <div className="w-28 text-right text-sm font-medium truncate">{party}</div>
-          <div className="flex-1 bg-gray-800 rounded-full h-6 relative">
+          <div className="flex-1 rounded-full h-6 relative"
+               style={{ backgroundColor: 'var(--border)' }}>
             <div
               className="h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
               style={{
@@ -43,7 +44,7 @@ export default function PartyTallyBar({ tally, majority = 23 }: Props) {
         </p>
       </div>
 
-      <p className="text-xs text-gray-500 pt-1">
+      <p className="text-xs pt-1" style={{ color: 'var(--text3)' }}>
         {totalDeclared} / 45 seats declared
       </p>
     </div>
