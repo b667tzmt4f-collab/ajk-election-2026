@@ -54,7 +54,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontWeight: 800, fontFamily: "'Newsreader', serif", fontSize: 18,
             }}>A</div>
-            <div style={{ lineHeight: 1.25 }}>
+            <div>
               <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.01em', color: 'var(--text)', fontFamily: "'Hanken Grotesk', sans-serif" }}>
                 AJK Election Analytics
               </div>
@@ -77,6 +77,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     textDecoration: 'none',
                     whiteSpace: 'nowrap',
                     transition: 'color .15s',
+                    borderBottom: 'none',
+                    outline: 'none',
                   }}>
                   {item.label}
                 </Link>

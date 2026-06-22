@@ -125,3 +125,6 @@ thead tr:first-child th:first-child { border-radius: 0; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg3); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Strip browser-default underline from all nav/header links site-wide */
+header a, nav a { text-decoration: none !important; border-bottom: none !important; }
