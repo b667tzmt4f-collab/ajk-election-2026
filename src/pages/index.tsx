@@ -492,16 +492,16 @@ export default function Home() {
         .a-mobnav{display:none;}
 
         .a-top{border-bottom:1px solid var(--line);background:var(--card-t);
-          backdrop-filter:blur(8px);position:sticky;top:0;z-index:5;overflow:hidden;}
-        .a-topin{display:flex;align-items:center;justify-content:space-between;height:64px;overflow:hidden;}
+          backdrop-filter:blur(8px);position:sticky;top:0;z-index:5;}
+        .a-topin{display:flex;align-items:center;justify-content:space-between;height:64px;}
         .a-brand{display:flex;align-items:center;gap:12px;}
         .a-mark{width:30px;height:30px;border-radius:7px;background:var(--accent);
           display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;
           font-family:'Newsreader',serif;font-size:18px;}
         .a-bname{font-weight:700;font-size:15px;letter-spacing:-.01em;}
         .a-bsub{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
-        .a-nav{display:flex;gap:14px;flex-shrink:1;min-width:0;overflow:hidden;}
-        .a-nav a{font-size:12.5px;color:var(--muted);font-weight:500;transition:color .15s;white-space:nowrap;}
+        .a-nav{display:flex;gap:26px;}
+        .a-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:color .15s;}
         .a-nav a:hover{color:var(--accent);}
         .a-live{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#B42318;}
         .a-dot{width:8px;height:8px;border-radius:50%;background:#E4002B;animation:apulse 2s infinite;}
@@ -621,10 +621,6 @@ export default function Home() {
         .a-foot-col a:hover{color:var(--accent);}
         .a-foot-h{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:700;margin-bottom:4px;}
 
-        @media (max-width:900px){
-          .a-nav{display:none;}
-          .a-burger{display:flex;}
-        }
         @media (max-width:768px){
           .a-nav{display:none;}
           .a-burger{display:flex;}
@@ -634,7 +630,7 @@ export default function Home() {
             border-bottom:1px solid var(--line);}
           .a-mobnav a:last-child{border-bottom:none;}
 
-          .a-wrap{padding:0 24px;}
+          .a-wrap{padding:0 16px;}
           .a-topin{height:auto;padding:10px 0;flex-wrap:wrap;row-gap:8px;}
           .a-brand{flex:1 1 auto;min-width:0;}
           .a-bname{font-size:13px;}
