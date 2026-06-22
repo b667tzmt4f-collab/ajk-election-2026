@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useLiveResults } from '@/hooks/useLiveResults'
 import { supabase, partyColor } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -22,6 +20,63 @@ const FALLBACK_TALLY: { party: string; seats: number }[] = [
   { party: 'JKPP', seats: 1 },
 ]
 
+// ── DUMMY 2026 live results — preview only ──────────────────────────────────
+// Hardcoded sample so the live panel renders its full design before polling
+// day. On 27 July, replace LIVE_DUMMY with the real useLiveResults() hook
+// (already built and used on /live) — same shape: seat, leader, runner-up.
+type LiveSeat = {
+  seat_id: string; name: string
+  leader: string; leader_party: string; leader_votes: number
+  runner: string; runner_party: string; runner_votes: number
+  reporting: boolean
+}
+const LIVE_DUMMY: LiveSeat[] = [
+  { seat_id:'LA-1', name:'Mirpur-I', leader:'Ch. Saood', leader_party:'IND (ex-PTI)', leader_votes:8590, runner:'M. Aslam', runner_party:'PPP', runner_votes:8137, reporting:true },
+  { seat_id:'LA-2', name:'Mirpur-II', leader:'Q. Majeed', leader_party:'PPP', leader_votes:8780, runner:'A. Khan', runner_party:'PML-N', runner_votes:8274, reporting:true },
+  { seat_id:'LA-3', name:'Mirpur-III', leader:'F. Mughal', leader_party:'PML-N', leader_votes:8970, runner:'S. Gilani', runner_party:'PPP', runner_votes:8411, reporting:true },
+  { seat_id:'LA-4', name:'Mirpur-IV', leader:'T. Khan', leader_party:'PPP', leader_votes:9160, runner:'R. Abbasi', runner_party:'IND (ex-PTI)', runner_votes:8548, reporting:true },
+  { seat_id:'LA-5', name:'Bhimber-I', leader:'A. Hameed', leader_party:'PML-N', leader_votes:9350, runner:'N. Gujjar', runner_party:'PPP', runner_votes:8685, reporting:true },
+  { seat_id:'LA-6', name:'Bhimber-II', leader:'S. Ayub', leader_party:'PPP', leader_votes:9540, runner:'K. Raja', runner_party:'PML-N', runner_votes:8822, reporting:true },
+  { seat_id:'LA-7', name:'Bhimber-III', leader:'Ch. Anwar', leader_party:'IND (ex-PTI)', leader_votes:9730, runner:'W. Khan', runner_party:'PPP', runner_votes:8959, reporting:true },
+  { seat_id:'LA-8', name:'Kotli-I', leader:'M. Latif', leader_party:'PPP', leader_votes:9920, runner:'A. Mir', runner_party:'PML-N', runner_votes:9096, reporting:true },
+  { seat_id:'LA-9', name:'Kotli-II', leader:'S. Chaudhry', leader_party:'PML-N', leader_votes:10110, runner:'F. Khan', runner_party:'PPP', runner_votes:9233, reporting:true },
+  { seat_id:'LA-10', name:'Kotli-III', leader:'A. Naseer', leader_party:'IND (ex-PTI)', leader_votes:10300, runner:'T. Mahmood', runner_party:'PPP', runner_votes:9370, reporting:true },
+  { seat_id:'LA-11', name:'Kotli-IV', leader:'R. Akbar', leader_party:'PPP', leader_votes:10490, runner:'Z. Khan', runner_party:'PML-N', runner_votes:9507, reporting:true },
+  { seat_id:'LA-12', name:'Kotli-V', leader:'N. Hussain', leader_party:'PML-N', leader_votes:10680, runner:'S. Raja', runner_party:'PPP', runner_votes:9644, reporting:true },
+  { seat_id:'LA-13', name:'Kotli-VI', leader:'M. Ishaq', leader_party:'PPP', leader_votes:10870, runner:'A. Gardezi', runner_party:'AJKMC', runner_votes:9781, reporting:true },
+  { seat_id:'LA-14', name:'Bagh-I', leader:'S. Khan', leader_party:'PML-N', leader_votes:11060, runner:'F. Abbasi', runner_party:'PPP', runner_votes:9918, reporting:true },
+  { seat_id:'LA-15', name:'Bagh-II', leader:'I. Hussain', leader_party:'PPP', leader_votes:11250, runner:'K. Mir', runner_party:'PML-N', runner_votes:10055, reporting:true },
+  { seat_id:'LA-16', name:'Bagh-III', leader:'A. Qureshi', leader_party:'IND (ex-PTI)', leader_votes:11440, runner:'S. Khan', runner_party:'PPP', runner_votes:10192, reporting:true },
+  { seat_id:'LA-17', name:'Haveli', leader:'M. Tariq', leader_party:'PPP', leader_votes:11630, runner:'R. Mughal', runner_party:'PML-N', runner_votes:10329, reporting:true },
+  { seat_id:'LA-18', name:'Poonch-I', leader:'S. Yaqoob', leader_party:'PML-N', leader_votes:11820, runner:'N. Khan', runner_party:'PPP', runner_votes:10466, reporting:true },
+  { seat_id:'LA-19', name:'Poonch-II', leader:'A. Hameed', leader_party:'PPP', leader_votes:12010, runner:'F. Raja', runner_party:'IND (ex-PTI)', runner_votes:10603, reporting:true },
+  { seat_id:'LA-20', name:'Poonch-III', leader:'K. Abbasi', leader_party:'IND (ex-PTI)', leader_votes:12200, runner:'M. Khan', runner_party:'PPP', runner_votes:10740, reporting:true },
+  { seat_id:'LA-21', name:'Poonch-IV', leader:'S. Ibrahim', leader_party:'PPP', leader_votes:12390, runner:'A. Sadiq', runner_party:'PML-N', runner_votes:10877, reporting:true },
+  { seat_id:'LA-22', name:'Poonch-V', leader:'B. Khan', leader_party:'PML-N', leader_votes:0, runner:'T. Gilani', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-23', name:'Poonch-VI', leader:'M. Yasin', leader_party:'PPP', leader_votes:0, runner:'S. Raja', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-24', name:'Poonch-VII', leader:'A. Khan', leader_party:'IND (ex-PTI)', leader_votes:0, runner:'N. Mir', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-25', name:'Neelum-I', leader:'S. Hussain', leader_party:'PPP', leader_votes:0, runner:'F. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-26', name:'Neelum-II', leader:'M. Din', leader_party:'PML-N', leader_votes:0, runner:'A. Shah', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-27', name:'Muzaffarabad-I', leader:'T. Awan', leader_party:'PPP', leader_votes:0, runner:'K. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-28', name:'Muzaffarabad-II', leader:'S. Mir', leader_party:'PML-N', leader_votes:0, runner:'R. Abbasi', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-29', name:'Muzaffarabad-III', leader:'A. Sheikh', leader_party:'PPP', leader_votes:0, runner:'M. Raja', runner_party:'IND (ex-PTI)', runner_votes:0, reporting:false },
+  { seat_id:'LA-30', name:'Muzaffarabad-IV', leader:'N. Khan', leader_party:'IND (ex-PTI)', leader_votes:0, runner:'S. Mughal', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-31', name:'Muzaffarabad-V', leader:'F. Hussain', leader_party:'PPP', leader_votes:0, runner:'A. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-32', name:'Muzaffarabad-VI', leader:'K. Mahmood', leader_party:'PML-N', leader_votes:0, runner:'T. Shah', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-33', name:'Muzaffarabad-VII', leader:'S. Raja', leader_party:'PPP', leader_votes:0, runner:'M. Din', runner_party:'JKPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-34', name:'Jammu-I', leader:'A. Qadir', leader_party:'PML-N', leader_votes:0, runner:'N. Khan', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-35', name:'Jammu-II', leader:'S. Bhatti', leader_party:'PML-N', leader_votes:0, runner:'F. Raja', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-36', name:'Jammu-III', leader:'M. Iqbal', leader_party:'PPP', leader_votes:0, runner:'A. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-37', name:'Jammu-IV', leader:'R. Saleem', leader_party:'PPP', leader_votes:0, runner:'K. Mir', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-38', name:'Jammu-V', leader:'S. Khan', leader_party:'PML-N', leader_votes:0, runner:'T. Abbasi', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-39', name:'Jammu-VI', leader:'A. Hussain', leader_party:'PPP', leader_votes:0, runner:'N. Raja', runner_party:'AJKMC', runner_votes:0, reporting:false },
+  { seat_id:'LA-40', name:'Valley-I', leader:'M. Yousaf', leader_party:'PPP', leader_votes:0, runner:'S. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-41', name:'Valley-II', leader:'K. Ahmed', leader_party:'PML-N', leader_votes:0, runner:'F. Mir', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-42', name:'Valley-III', leader:'S. Gilani', leader_party:'PPP', leader_votes:0, runner:'A. Shah', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-43', name:'Valley-IV', leader:'N. Khan', leader_party:'JKPP', leader_votes:0, runner:'M. Raja', runner_party:'PPP', runner_votes:0, reporting:false },
+  { seat_id:'LA-44', name:'Valley-V', leader:'A. Mir', leader_party:'PPP', leader_votes:0, runner:'S. Khan', runner_party:'PML-N', runner_votes:0, reporting:false },
+  { seat_id:'LA-45', name:'Valley-VI', leader:'T. Hussain', leader_party:'PML-N', leader_votes:0, runner:'K. Abbasi', runner_party:'PPP', runner_votes:0, reporting:false },
+]
 
 const NAV = [
   { label: 'Live', href: '/live' },
@@ -104,13 +159,14 @@ export default function Home() {
   const [tally, setTally] = useState(FALLBACK_TALLY)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Single source of truth — same hook /live uses
-  const { seatResults, partyTally, loading: liveLoading } = useLiveResults()
-  const sortedSeats = [...seatResults].sort(
-    (a, b) => parseInt(a.seat_id.split('-')[1]) - parseInt(b.seat_id.split('-')[1])
-  )
-  const liveTally = Object.entries(partyTally).sort((a, b) => b[1] - a[1])
-  const anyReporting = liveTally.length > 0
+  // Tally reporting seats by leading party — recomputes if LIVE_DUMMY is
+  // swapped for real useLiveResults() data later.
+  const liveTallyMap: Record<string, number> = {}
+  for (const s of LIVE_DUMMY) {
+    if (!s.reporting) continue
+    liveTallyMap[s.leader_party] = (liveTallyMap[s.leader_party] || 0) + 1
+  }
+  const liveTally = Object.entries(liveTallyMap).sort((a, b) => b[1] - a[1])
 
   // Pull the real 2021 seat tally from Supabase; keep the fallback on any error.
   useEffect(() => {
@@ -237,13 +293,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Live results panel — reads from useLiveResults() same as /live */}
+          {/* Live results panel — dummy data preview, see LIVE_DUMMY above */}
           <div className="a-livepanel">
             <div className="a-livepanel-h">
               <div className="a-livepanel-title">
                 <span className="a-dot" /> Live Results
               </div>
-              <span className="a-livepanel-tag">{anyReporting ? 'LIVE' : liveLoading ? 'LOADING' : 'AWAITING'}</span>
+              <span className="a-livepanel-tag">PREVIEW DATA</span>
             </div>
 
             <div className="a-livetally">
@@ -257,35 +313,34 @@ export default function Home() {
             </div>
 
             <div className="a-liveseats">
-              {sortedSeats.map((s) => (
+              {LIVE_DUMMY.map((s) => (
                 <div key={s.seat_id} className="a-liverow">
                   <div className="a-liverow-top">
                     <div className="a-liverow-seat">
                       <span className="a-liverow-id">{s.seat_id}</span>
-                      <span className="a-liverow-name">{s.seat_name}</span>
+                      <span className="a-liverow-name">{s.name}</span>
                     </div>
-                    {!s.has_results && <span className="a-liverow-pending">awaiting</span>}
+                    {!s.reporting && <span className="a-liverow-pending">awaiting</span>}
                   </div>
-                  {s.has_results && s.winner ? (
+
+                  {s.reporting ? (
                     <div className="a-liverow-cands">
                       <div className="a-liverow-cand-row">
                         <span className="a-liverow-badge"
-                              style={{ background: partyColor(s.winner.party_2026) }}>
-                          {s.winner.party_2026}
+                              style={{ background: partyColor(s.leader_party) }}>
+                          {s.leader_party}
                         </span>
-                        <span className="a-liverow-cname">{s.winner.candidate_name}</span>
-                        <span className="a-liverow-votes">{s.winner.votes_2026.toLocaleString()}</span>
+                        <span className="a-liverow-cname">{s.leader}</span>
+                        <span className="a-liverow-votes">{s.leader_votes.toLocaleString()}</span>
                       </div>
-                      {s.runner && (
-                        <div className="a-liverow-cand-row a-liverow-cand-row--runner">
-                          <span className="a-liverow-badge a-liverow-badge--ghost"
-                                style={{ borderColor: partyColor(s.runner.party_2026), color: partyColor(s.runner.party_2026) }}>
-                            {s.runner.party_2026}
-                          </span>
-                          <span className="a-liverow-cname">{s.runner.candidate_name}</span>
-                          <span className="a-liverow-votes">{s.runner.votes_2026.toLocaleString()}</span>
-                        </div>
-                      )}
+                      <div className="a-liverow-cand-row a-liverow-cand-row--runner">
+                        <span className="a-liverow-badge a-liverow-badge--ghost"
+                              style={{ borderColor: partyColor(s.runner_party), color: partyColor(s.runner_party) }}>
+                          {s.runner_party}
+                        </span>
+                        <span className="a-liverow-cname">{s.runner}</span>
+                        <span className="a-liverow-votes">{s.runner_votes.toLocaleString()}</span>
+                      </div>
                     </div>
                   ) : (
                     <div className="a-liverow-cands a-liverow-cands--empty">No votes counted yet</div>
@@ -416,7 +471,7 @@ export default function Home() {
           transition:background-color .2s,color .2s;}
         .dirA *{box-sizing:border-box;}
         .dirA a{color:inherit;text-decoration:none;}
-        .a-wrap{max-width:1120px;margin:0 auto;padding:0 48px;}
+        .a-wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
 
         /* ── Dark mode — mirrors the dashboard's :root.dark tokens in
            globals.css, scoped here since the landing page uses its own
@@ -445,7 +500,7 @@ export default function Home() {
           font-family:'Newsreader',serif;font-size:18px;}
         .a-bname{font-weight:700;font-size:15px;letter-spacing:-.01em;}
         .a-bsub{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;}
-        .a-nav{display:flex;gap:26px;}
+        .a-nav{display:flex;gap:18px;}
         .a-nav a{font-size:13.5px;color:var(--muted);font-weight:500;transition:color .15s;}
         .a-nav a:hover{color:var(--accent);}
         .a-live{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#B42318;}
@@ -575,7 +630,7 @@ export default function Home() {
             border-bottom:1px solid var(--line);}
           .a-mobnav a:last-child{border-bottom:none;}
 
-          .a-wrap{padding:0 16px;}
+          .a-wrap{padding:0 24px;}
           .a-topin{height:auto;padding:10px 0;flex-wrap:wrap;row-gap:8px;}
           .a-brand{flex:1 1 auto;min-width:0;}
           .a-bname{font-size:13px;}
