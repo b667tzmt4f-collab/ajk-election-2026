@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
-import { supabase, Constituency } from '@/lib/supabase'
+import { supabase, Constituency, partyColor } from '@/lib/supabase'
 
 const numSort = (a: string, b: string) =>
   parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
@@ -27,14 +27,24 @@ function SortTh({ label, k, current, dir, onSort }: {
 }
 
 export default function Demography() {
-  const [seats, setSeats]   = useState<Constituency[]>([])
-  const [sortBy, setSort]   = useState<SortKey>('seat')
+  const [seats, setSeats]     = useState<Constituency[]>([])
+  const [winners, setWinners] = useState<Record<string, { name: string; party: string }>>({})
+  const [sortBy, setSort]     = useState<SortKey>('seat')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
-  const [region, setRegion] = useState('All')
+  const [region, setRegion]   = useState('All')
 
   useEffect(() => {
     supabase.from('constituencies').select('*')
       .then(({ data }) => setSeats(data || []))
+    // Fetch 2021 winners — keyed by seat_id for O(1) lookup in the table
+    supabase.from('elections_history')
+      .select('seat_id, winner, winner_party')
+      .eq('election_year', 2021)
+      .then(({ data }) => {
+        const map: Record<string, { name: string; party: string }> = {}
+        for (const r of data || []) map[r.seat_id] = { name: r.winner, party: r.winner_party }
+        setWinners(map)
+      })
   }, [])
 
   // Clicking same column flips direction; clicking new column resets to desc
@@ -136,16 +146,17 @@ export default function Demography() {
         <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
           <colgroup>
             <col style={{ width: '60px' }} />   {/* Seat */}
-            <col style={{ width: '130px' }} />  {/* Constituency — capped, wraps */}
-            <col style={{ width: '72px' }} />   {/* Region */}
-            <col style={{ width: '72px' }} />   {/* 2021 */}
-            <col style={{ width: '78px' }} />   {/* 2026 */}
-            <col style={{ width: '78px' }} />   {/* New voters */}
-            <col style={{ width: '72px' }} />   {/* Growth % */}
-            <col style={{ width: '78px' }} />   {/* Male count */}
-            <col style={{ width: '60px' }} />   {/* Male % */}
-            <col style={{ width: '78px' }} />   {/* Female count */}
-            <col style={{ width: '60px' }} />   {/* Female % */}
+            <col style={{ width: '120px' }} />  {/* Constituency */}
+            <col style={{ width: '68px' }} />   {/* Region */}
+            <col style={{ width: '70px' }} />   {/* 2021 voters */}
+            <col style={{ width: '120px' }} />  {/* 2021 MLA — name wraps */}
+            <col style={{ width: '76px' }} />   {/* 2026 voters */}
+            <col style={{ width: '76px' }} />   {/* New voters */}
+            <col style={{ width: '68px' }} />   {/* Growth % */}
+            <col style={{ width: '76px' }} />   {/* Male count */}
+            <col style={{ width: '58px' }} />   {/* Male % */}
+            <col style={{ width: '76px' }} />   {/* Female count */}
+            <col style={{ width: '58px' }} />   {/* Female % */}
           </colgroup>
           <thead>
             <tr style={{ borderBottom:'2px solid var(--border)', backgroundColor:'var(--bg3)' }}>
@@ -157,6 +168,8 @@ export default function Demography() {
                   style={{ color:'var(--text3)' }}>Region</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right"
                   style={{ color:'var(--text3)' }}>2021</th>
+              <th className="py-2 px-2 text-xs uppercase font-semibold text-left"
+                  style={{ color:'var(--text3)' }}>2021 MLA</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right"
                   style={{ color:'var(--text3)' }}>2026</th>
               <SortTh label="New voters"  k="growth_num" current={sortBy} dir={sortDir} onSort={handleSort} />
@@ -190,6 +203,20 @@ export default function Demography() {
                   <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color:'var(--text3)' }}>
                     {s.registered_2021.toLocaleString()}
+                  </td>
+                  {/* 2021 MLA — winner name + party badge */}
+                  <td className="py-2 px-2 text-xs leading-snug"
+                      style={{ wordBreak:'break-word', overflowWrap:'anywhere' }}>
+                    {winners[s.seat_id] ? (
+                      <>
+                        <span className="font-medium">{winners[s.seat_id].name}</span>
+                        <br />
+                        <span className="inline-block mt-0.5 px-1 py-0 rounded text-white text-[10px] font-semibold"
+                              style={{ backgroundColor: partyColor(winners[s.seat_id].party) }}>
+                          {winners[s.seat_id].party}
+                        </span>
+                      </>
+                    ) : <span style={{ color:'var(--text3)' }}>—</span>}
                   </td>
                   <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold">
                     {s.registered_2026.toLocaleString()}
@@ -230,6 +257,7 @@ export default function Demography() {
                   style={{ color:'var(--text3)' }}>
                 {base.reduce((s,c) => s+c.registered_2021,0).toLocaleString()}
               </td>
+              <td className="py-2 px-2 text-xs" style={{ color:'var(--text3)' }}>—</td>
               <td className="py-2 px-2 text-right tabular-nums text-xs font-bold">
                 {total26.toLocaleString()}
               </td>
