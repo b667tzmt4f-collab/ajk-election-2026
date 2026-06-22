@@ -64,7 +64,7 @@ export default function Records() {
     return (
       <div className="space-y-2">
         {Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([party,n]) => {
-          const hex = `#${partyColor(party)}`
+          const hex = partyColor(party)
           return (
             <div key={party} className="flex items-center gap-2">
               <span className="text-xs w-20 text-right font-medium"
