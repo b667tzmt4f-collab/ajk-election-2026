@@ -85,7 +85,6 @@ const NAV = [
   { label: 'Map', href: '/map' },
   { label: 'Demography', href: '/demography' },
   { label: 'Candidates', href: '/candidates' },
-  { label: 'Score', href: '/score' },
   { label: 'Methodology', href: '/methodology' },
 ]
 
@@ -459,6 +458,11 @@ export default function Home() {
             <a href="/projection">2026 projection</a>
             <a href="/map">Constituency map</a>
             <a href="/methodology">Methodology</a>
+          </div>
+          <div className="a-foot-col">
+            <div className="a-foot-h" style={{ color:'var(--muted)', opacity:0.6 }}>Admin</div>
+            <a href="/enter" style={{ opacity:0.6 }}>Enter results</a>
+            <a href="/score" style={{ opacity:0.6 }}>Score seats</a>
           </div>
         </div>
       </footer>

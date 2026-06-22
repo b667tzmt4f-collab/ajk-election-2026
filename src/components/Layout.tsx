@@ -19,8 +19,6 @@ const NAV = [
   { href: '/map',         label: 'Map' },
   { href: '/demography',  label: 'Demography' },
   { href: '/candidates',  label: 'Candidates' },
-  { href: '/enter',       label: 'Enter Results', special: true },
-  { href: '/score',       label: 'Score',   special: true },
   { href: '/methodology', label: 'Methodology' },
 ]
 
@@ -133,8 +131,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="py-4 text-center text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text3)' }}>
-        AJK GE 2026 Analytics · An ApexInsights Platform · Independent · Not affiliated with any party or government
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '16px 48px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+          AJK GE 2026 Analytics · An ApexInsights Platform · Independent · Not affiliated with any party or government
+        </span>
+        <span style={{ fontSize: 11, color: 'var(--text3)', opacity: 0.6 }}>
+          Admin:&nbsp;
+          <a href="/enter" style={{ color: 'var(--text3)', textDecoration: 'none' }}>Enter Results</a>
+          &nbsp;·&nbsp;
+          <a href="/score" style={{ color: 'var(--text3)', textDecoration: 'none' }}>Score Seats</a>
+        </span>
       </footer>
     </div>
   )
