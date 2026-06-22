@@ -460,6 +460,11 @@ export default function Home() {
             <a href="/map">Constituency map</a>
             <a href="/methodology">Methodology</a>
           </div>
+          <div className="a-foot-col">
+            <div className="a-foot-h" style={{ opacity:0.5 }}>Admin</div>
+            <a href="/enter" style={{ opacity:0.5 }}>Enter results</a>
+            <a href="/score" style={{ opacity:0.5 }}>Score seats</a>
+          </div>
         </div>
       </footer>
 
