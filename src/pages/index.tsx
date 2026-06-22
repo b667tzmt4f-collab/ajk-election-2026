@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase, partyColor } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -211,7 +212,7 @@ export default function Home() {
             </div>
           </div>
           <nav className="a-nav">
-            {NAV.map((n) => <a key={n.label} href={n.href}>{n.label}</a>)}
+            {NAV.map((n) => <Link key={n.label} href={n.href}>{n.label}</Link>)}
           </nav>
           <div className="a-top-right">
             <div className="a-live"><span className="a-dot" /> LIVE FEED READY</div>
@@ -261,7 +262,7 @@ export default function Home() {
         {menuOpen && (
           <nav className="a-mobnav">
             {NAV.map((n) => (
-              <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</a>
+              <Link key={n.label} href={n.href} onClick={() => setMenuOpen(false)}>{n.label}</Link>
             ))}
           </nav>
         )}
