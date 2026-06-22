@@ -6,20 +6,22 @@ import { supabase, Constituency } from '@/lib/supabase'
 const numSort = (a: string, b: string) =>
   parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
 
-// All sortable columns — each maps to a sort function
 type SortKey = 'seat' | 'growth_pct' | 'growth_num' | 'female_pct' | 'male_pct'
+type SortDir = 'desc' | 'asc'
 
-// Clickable column header with active indicator
-function SortTh({ label, k, current, onSort }: {
-  label: string; k: SortKey; current: SortKey; onSort: (k: SortKey) => void
+// Clickable column header — toggles asc/desc on second click
+function SortTh({ label, k, current, dir, onSort }: {
+  label: string; k: SortKey; current: SortKey; dir: SortDir
+  onSort: (k: SortKey) => void
 }) {
   const active = current === k
+  const arrow  = active ? (dir === 'desc' ? ' ↓' : ' ↑') : ''
   return (
-    <th className="py-2 px-2 text-xs uppercase font-semibold text-right cursor-pointer select-none
-                   whitespace-nowrap hover:opacity-80 transition-opacity"
+    <th className="py-2 px-2 text-xs uppercase font-semibold text-right cursor-pointer
+                   select-none whitespace-nowrap hover:opacity-80 transition-opacity"
         style={{ color: active ? 'var(--accent)' : 'var(--text3)' }}
         onClick={() => onSort(k)}>
-      {label}{active ? ' ↓' : ''}
+      {label}{arrow}
     </th>
   )
 }
@@ -27,6 +29,7 @@ function SortTh({ label, k, current, onSort }: {
 export default function Demography() {
   const [seats, setSeats]   = useState<Constituency[]>([])
   const [sortBy, setSort]   = useState<SortKey>('seat')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [region, setRegion] = useState('All')
 
   useEffect(() => {
@@ -34,9 +37,18 @@ export default function Demography() {
       .then(({ data }) => setSeats(data || []))
   }, [])
 
+  // Clicking same column flips direction; clicking new column resets to desc
+  function handleSort(k: SortKey) {
+    if (k === sortBy) {
+      setSortDir(d => d === 'desc' ? 'asc' : 'desc')
+    } else {
+      setSort(k)
+      setSortDir('desc')
+    }
+  }
+
   const base = seats.filter(s => region === 'All' || s.region === region)
 
-  // Derived metrics for each seat
   function metrics(s: Constituency) {
     const growthNum = s.registered_2026 - s.registered_2021
     const growthPct = s.registered_2021 > 0
@@ -48,15 +60,16 @@ export default function Demography() {
   }
 
   const sorted = [...base].sort((a, b) => {
-    if (sortBy === 'seat')       return numSort(a.seat_id, b.seat_id)
-    if (sortBy === 'growth_pct') return metrics(b).growthPct - metrics(a).growthPct
-    if (sortBy === 'growth_num') return metrics(b).growthNum - metrics(a).growthNum
-    if (sortBy === 'female_pct') return metrics(b).femalePct - metrics(a).femalePct
-    if (sortBy === 'male_pct')   return metrics(b).malePct   - metrics(a).malePct
-    return 0
+    let diff = 0
+    if (sortBy === 'seat')       diff = numSort(a.seat_id, b.seat_id)
+    else if (sortBy === 'growth_pct') diff = metrics(a).growthPct - metrics(b).growthPct
+    else if (sortBy === 'growth_num') diff = metrics(a).growthNum - metrics(b).growthNum
+    else if (sortBy === 'female_pct') diff = metrics(a).femalePct - metrics(b).femalePct
+    else if (sortBy === 'male_pct')   diff = metrics(a).malePct   - metrics(b).malePct
+    // seat always asc; numeric columns: desc by default, flip when dir=asc
+    return sortBy === 'seat' ? diff : sortDir === 'desc' ? -diff : diff
   })
 
-  // Aggregate stats
   const total26   = base.reduce((s, c) => s + c.registered_2026, 0)
   const total21   = base.reduce((s, c) => s + c.registered_2021, 0)
   const female26  = base.reduce((s, c) => s + c.registered_female_2026, 0)
@@ -73,7 +86,6 @@ export default function Demography() {
         EC-notified electoral rolls, 22 May 2026
       </p>
 
-      {/* Summary stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total registered 2026" value={total26.toLocaleString()} />
         <StatCard label="Growth from 2021"
@@ -85,33 +97,35 @@ export default function Demography() {
         <StatCard label="New voters" value="~377K" sub="at 2021 turnout rate" />
       </div>
 
-      {/* Sort & filter controls */}
+      {/* Controls */}
       <div className="flex flex-wrap gap-3 mb-4 items-center">
         <select value={region} onChange={e => setRegion(e.target.value)}>
           <option value="All">All regions</option>
           <option value="In-Region">In-Region (33 seats)</option>
           <option value="Refugee">Refugee (12 seats)</option>
         </select>
-
-        {/* Quick-sort buttons — mirror the column sort headers */}
         <div className="flex gap-1 flex-wrap">
           {([
             ['seat',       'By seat no.'],
-            ['growth_num', 'By new voters ↓'],
-            ['growth_pct', 'By growth % ↓'],
-            ['female_pct', 'By female % ↓'],
-            ['male_pct',   'By male % ↓'],
-          ] as const).map(([k, label]) => (
-            <button key={k} onClick={() => setSort(k)}
-              className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
-              style={{
-                backgroundColor: sortBy===k ? 'var(--accent)' : 'var(--bg3)',
-                color: sortBy===k ? '#fff' : 'var(--text2)',
-                border: '1px solid var(--border)',
-              }}>
-              {label}
-            </button>
-          ))}
+            ['growth_num', 'New voters'],
+            ['growth_pct', 'Growth %'],
+            ['female_pct', 'Female %'],
+            ['male_pct',   'Male %'],
+          ] as const).map(([k, label]) => {
+            const active = sortBy === k
+            const arrow  = active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''
+            return (
+              <button key={k} onClick={() => handleSort(k)}
+                className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                style={{
+                  backgroundColor: active ? 'var(--accent)' : 'var(--bg3)',
+                  color: active ? '#fff' : 'var(--text2)',
+                  border: '1px solid var(--border)',
+                }}>
+                {label}{arrow}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -119,10 +133,22 @@ export default function Demography() {
         <h3 className="text-sm font-semibold uppercase mb-3" style={{ color:'var(--text3)' }}>
           All {sorted.length} constituencies — 2021 vs 2026 rolls
         </h3>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '60px' }} />   {/* Seat */}
+            <col style={{ width: '130px' }} />  {/* Constituency — capped, wraps */}
+            <col style={{ width: '72px' }} />   {/* Region */}
+            <col style={{ width: '72px' }} />   {/* 2021 */}
+            <col style={{ width: '78px' }} />   {/* 2026 */}
+            <col style={{ width: '78px' }} />   {/* New voters */}
+            <col style={{ width: '72px' }} />   {/* Growth % */}
+            <col style={{ width: '78px' }} />   {/* Male count */}
+            <col style={{ width: '60px' }} />   {/* Male % */}
+            <col style={{ width: '78px' }} />   {/* Female count */}
+            <col style={{ width: '60px' }} />   {/* Female % */}
+          </colgroup>
           <thead>
             <tr style={{ borderBottom:'2px solid var(--border)', backgroundColor:'var(--bg3)' }}>
-              {/* Static left columns */}
               <th className="py-2 px-2 text-xs uppercase font-semibold text-left"
                   style={{ color:'var(--text3)' }}>Seat</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-left"
@@ -133,14 +159,12 @@ export default function Demography() {
                   style={{ color:'var(--text3)' }}>2021</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right"
                   style={{ color:'var(--text3)' }}>2026</th>
-
-              {/* Sortable columns — click header to sort */}
-              <SortTh label="New voters"  k="growth_num" current={sortBy} onSort={setSort} />
-              <SortTh label="Growth %"    k="growth_pct" current={sortBy} onSort={setSort} />
-              <SortTh label="Male"        k="male_pct"   current={sortBy} onSort={setSort} />
+              <SortTh label="New voters"  k="growth_num" current={sortBy} dir={sortDir} onSort={handleSort} />
+              <SortTh label="Growth %"    k="growth_pct" current={sortBy} dir={sortDir} onSort={handleSort} />
+              <SortTh label="Male"        k="male_pct"   current={sortBy} dir={sortDir} onSort={handleSort} />
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right"
                   style={{ color:'var(--text3)' }}>Male %</th>
-              <SortTh label="Female"      k="female_pct" current={sortBy} onSort={setSort} />
+              <SortTh label="Female"      k="female_pct" current={sortBy} dir={sortDir} onSort={handleSort} />
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right"
                   style={{ color:'var(--text3)' }}>Female %</th>
             </tr>
@@ -148,12 +172,6 @@ export default function Demography() {
           <tbody>
             {sorted.map((s, i) => {
               const { growthNum, growthPct, femalePct, malePct } = metrics(s)
-              const gPctStr = growthPct.toFixed(1)
-              const fPctStr = femalePct.toFixed(1)
-              const mPctStr = malePct.toFixed(1)
-              const male26s   = s.registered_male_2026
-              const female26s = s.registered_female_2026
-
               return (
                 <tr key={s.seat_id}
                     style={{
@@ -161,99 +179,74 @@ export default function Demography() {
                       backgroundColor: i % 2 === 0 ? 'var(--card-bg)' : 'var(--bg3)',
                     }}
                     className="hover:opacity-80 transition-opacity">
-
                   <td className="py-2 px-2 text-xs font-mono font-semibold"
                       style={{ color:'var(--accent)' }}>{s.seat_id}</td>
-                  <td className="py-2 px-2 font-medium whitespace-nowrap">{s.seat_name}</td>
+                  {/* Constituency — wraps inside fixed width instead of pushing table wide */}
+                  <td className="py-2 px-2 text-xs font-medium leading-snug"
+                      style={{ wordBreak:'break-word', overflowWrap:'anywhere' }}>
+                    {s.seat_name}
+                  </td>
                   <td className="py-2 px-2 text-xs" style={{ color:'var(--text2)' }}>{s.region}</td>
-
-                  {/* 2021 total */}
-                  <td className="py-2 px-2 text-right tabular-nums"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color:'var(--text3)' }}>
                     {s.registered_2021.toLocaleString()}
                   </td>
-
-                  {/* 2026 total */}
-                  <td className="py-2 px-2 text-right tabular-nums font-semibold">
+                  <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold">
                     {s.registered_2026.toLocaleString()}
                   </td>
-
-                  {/* New voters (absolute growth) */}
-                  <td className="py-2 px-2 text-right tabular-nums font-semibold"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
                       style={{ color: growthNum > 0 ? '#16a34a' : '#dc2626' }}>
                     {growthNum > 0 ? '+' : ''}{growthNum.toLocaleString()}
                   </td>
-
-                  {/* Growth % */}
-                  <td className="py-2 px-2 text-right tabular-nums font-semibold"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
                       style={{ color: growthPct > 20 ? '#16a34a' : growthPct < 0 ? '#dc2626' : 'var(--text)' }}>
-                    {growthNum > 0 ? '+' : ''}{gPctStr}%
+                    {growthNum > 0 ? '+' : ''}{growthPct.toFixed(1)}%
                   </td>
-
-                  {/* Male voters count */}
-                  <td className="py-2 px-2 text-right tabular-nums"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color:'var(--text2)' }}>
-                    {male26s.toLocaleString()}
+                    {s.registered_male_2026.toLocaleString()}
                   </td>
-
-                  {/* Male % */}
-                  <td className="py-2 px-2 text-right tabular-nums"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color:'var(--text2)' }}>
-                    {mPctStr}%
+                    {malePct.toFixed(1)}%
                   </td>
-
-                  {/* Female voters count */}
-                  <td className="py-2 px-2 text-right tabular-nums"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color:'var(--text2)' }}>
-                    {female26s.toLocaleString()}
+                    {s.registered_female_2026.toLocaleString()}
                   </td>
-
-                  {/* Female % */}
-                  <td className="py-2 px-2 text-right tabular-nums"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color: femalePct > 49 ? '#16a34a' : 'var(--text2)' }}>
-                    {fPctStr}%
+                    {femalePct.toFixed(1)}%
                   </td>
                 </tr>
               )
             })}
           </tbody>
-
-          {/* Totals footer */}
           <tfoot>
             <tr style={{ borderTop:'2px solid var(--border)', backgroundColor:'var(--bg3)' }}>
               <td colSpan={3} className="py-2 px-2 text-xs font-semibold uppercase"
                   style={{ color:'var(--text3)' }}>Total ({sorted.length} seats)</td>
-              <td className="py-2 px-2 text-right tabular-nums font-semibold"
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
                   style={{ color:'var(--text3)' }}>
                 {base.reduce((s,c) => s+c.registered_2021,0).toLocaleString()}
               </td>
-              <td className="py-2 px-2 text-right tabular-nums font-bold">
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-bold">
                 {total26.toLocaleString()}
               </td>
-              <td className="py-2 px-2 text-right tabular-nums font-bold"
-                  style={{ color:'#16a34a' }}>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-bold" style={{ color:'#16a34a' }}>
                 +{growth.toLocaleString()}
               </td>
-              <td className="py-2 px-2 text-right tabular-nums font-bold"
-                  style={{ color:'#16a34a' }}>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-bold" style={{ color:'#16a34a' }}>
                 +{growthPct}%
               </td>
-              <td className="py-2 px-2 text-right tabular-nums font-semibold"
-                  style={{ color:'var(--text2)' }}>
-                {male26.toLocaleString()}
-              </td>
-              <td className="py-2 px-2 text-right tabular-nums font-semibold"
-                  style={{ color:'var(--text2)' }}>
-                {malePct}%
-              </td>
-              <td className="py-2 px-2 text-right tabular-nums font-semibold"
-                  style={{ color:'var(--text2)' }}>
-                {female26.toLocaleString()}
-              </td>
-              <td className="py-2 px-2 text-right tabular-nums font-semibold"
-                  style={{ color:'var(--text2)' }}>
-                {femPct}%
-              </td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
+                  style={{ color:'var(--text2)' }}>{male26.toLocaleString()}</td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
+                  style={{ color:'var(--text2)' }}>{malePct}%</td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
+                  style={{ color:'var(--text2)' }}>{female26.toLocaleString()}</td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
+                  style={{ color:'var(--text2)' }}>{femPct}%</td>
             </tr>
           </tfoot>
         </table>
