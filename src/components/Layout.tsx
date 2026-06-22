@@ -65,7 +65,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          <nav style={{ display:'flex', alignItems:'center', gap:26, overflowX:'auto' }}>
+          <nav style={{ display:'flex', alignItems:'center', gap:20, flexWrap:'nowrap' }}>
             {NAV.map(item => {
               const active = pathname === item.href
               return (
