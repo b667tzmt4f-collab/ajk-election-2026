@@ -139,25 +139,12 @@ export default function Demography() {
         </div>
       </div>
 
-      <div className="card overflow-x-auto">
+      <div style={{ maxWidth: "100%", overflowX: "hidden" }}>
+      <div className="card" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", maxWidth: "100%" }}>
         <h3 className="text-sm font-semibold uppercase mb-3" style={{ color:'var(--text3)' }}>
           All {sorted.length} constituencies — 2021 vs 2026 rolls
         </h3>
-        <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: '60px' }} />   {/* Seat */}
-            <col style={{ width: '120px' }} />  {/* Constituency */}
-            <col style={{ width: '68px' }} />   {/* Region */}
-            <col style={{ width: '70px' }} />   {/* 2021 voters */}
-            <col style={{ width: '120px' }} />  {/* 2021 MLA — name wraps */}
-            <col style={{ width: '76px' }} />   {/* 2026 voters */}
-            <col style={{ width: '76px' }} />   {/* New voters */}
-            <col style={{ width: '68px' }} />   {/* Growth % */}
-            <col style={{ width: '76px' }} />   {/* Male count */}
-            <col style={{ width: '58px' }} />   {/* Male % */}
-            <col style={{ width: '76px' }} />   {/* Female count */}
-            <col style={{ width: '58px' }} />   {/* Female % */}
-          </colgroup>
+        <table className="w-full text-sm" style={{ minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom:'2px solid var(--border)', backgroundColor:'var(--bg3)' }}>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-left"
@@ -278,6 +265,7 @@ export default function Demography() {
             </tr>
           </tfoot>
         </table>
+      </div>
       </div>
     </Layout>
   )

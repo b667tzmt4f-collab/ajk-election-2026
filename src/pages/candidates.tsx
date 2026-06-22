@@ -125,7 +125,7 @@ export default function Candidates() {
           </p>
 
           {/* Table — constituency header rows + candidate rows */}
-          <div className="card overflow-x-auto p-0">
+          <div style={{maxWidth:"100%",overflowX:"hidden"}}><div className="card p-0" style={{overflowX:"auto"}}> 
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr style={{backgroundColor:'var(--accent)'}}>
