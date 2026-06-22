@@ -126,7 +126,23 @@ thead tr:first-child th:first-child { border-radius: 0; }
 ::-webkit-scrollbar-track { background: var(--bg3); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* Strip browser-default underline from all nav/header links site-wide */
-header a, nav a { text-decoration: none !important; border-bottom: none !important; }
-/* Belt-and-suspenders: kill any underline on every anchor in the app */
-a { text-decoration: none; }
+/* ── Layout page container — prevent horizontal overflow on mobile ── */
+/* Ensures tables and wide cards scroll internally rather than
+   breaking the page layout on narrow viewports */
+.lA-wrap {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Wide tables inside cards scroll horizontally within the card,
+   not the whole page */
+.card.overflow-x-auto {
+  max-width: 100%;
+}
+
+/* Prevent any direct child of main from overflowing its container */
+main > * {
+  max-width: 100%;
+  min-width: 0;
+}
