@@ -94,8 +94,8 @@ export default function Records() {
         AJK General Elections 2011, 2016 and 2021 — official EC results
       </p>
 
-      {/* View tabs — 2×2 grid on mobile, single row on md+ */}
-      <div className="grid grid-cols-2 md:flex gap-2 mb-6">
+      {/* View tabs — 2×2 on mobile via jsx media query, row on desktop */}
+      <div className="lA-view-tabs" style={{ marginBottom: 24 }}>
         {([
           ['overview',   'Overview'],
           ['seats',      'Seat by Seat'],
@@ -103,7 +103,7 @@ export default function Records() {
           ['three-way',  'Three-Election Table'],
         ] as const).map(([v,label]) => (
           <button key={v} onClick={() => setView(v)}
-            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center"
+            className="lA-view-tab"
             style={{
               backgroundColor: view===v ? 'var(--accent)' : 'var(--card-bg)',
               color: view===v ? '#fff' : 'var(--text2)',
@@ -113,6 +113,34 @@ export default function Records() {
           </button>
         ))}
       </div>
+
+      <style jsx>{`
+        .lA-view-tabs {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .lA-view-tab {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.15s, color 0.15s;
+          text-align: center;
+        }
+        @media (max-width: 768px) {
+          .lA-view-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+          }
+          .lA-view-tab {
+            padding: 10px 8px;
+            font-size: 13px;
+          }
+        }
+      `}</style>
 
       {/* ── OVERVIEW ─────────────────────────────── */}
       {view==='overview' && <>

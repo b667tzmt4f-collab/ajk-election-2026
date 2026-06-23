@@ -108,14 +108,14 @@ export default function Demography() {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-col md:flex-row gap-2 mb-4">
+      <div className="lA-dem-controls" style={{ marginBottom: 16 }}>
         <select value={region} onChange={e => setRegion(e.target.value)}
-                className="w-full md:w-auto">
+                className="lA-dem-select">
           <option value="All">All regions</option>
           <option value="In-Region">In-Region (33 seats)</option>
           <option value="Refugee">Refugee (12 seats)</option>
         </select>
-        <div className="grid grid-cols-3 md:flex gap-1">
+        <div className="lA-dem-sort">
           {([
             ['seat',       'Seat no.'],
             ['growth_num', 'New voters'],
@@ -127,7 +127,7 @@ export default function Demography() {
             const arrow  = active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''
             return (
               <button key={k} onClick={() => handleSort(k)}
-                className="px-2 py-1.5 rounded text-xs font-medium transition-colors text-center"
+                className="lA-dem-btn"
                 style={{
                   backgroundColor: active ? 'var(--accent)' : 'var(--bg3)',
                   color: active ? '#fff' : 'var(--text2)',
@@ -139,6 +139,45 @@ export default function Demography() {
           })}
         </div>
       </div>
+
+      <style jsx>{`
+        .lA-dem-controls {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .lA-dem-sort {
+          display: flex;
+          gap: 4px;
+          flex-wrap: wrap;
+        }
+        .lA-dem-btn {
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.15s;
+          white-space: nowrap;
+        }
+        @media (max-width: 768px) {
+          .lA-dem-controls {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .lA-dem-sort {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+          }
+          .lA-dem-btn {
+            text-align: center;
+            padding: 8px 4px;
+          }
+        }
+      `}</style>
 
       <div className="card overflow-x-auto">
         <h3 className="text-sm font-semibold uppercase mb-3" style={{ color:'var(--text3)' }}>
