@@ -31,6 +31,7 @@ const NAV = [
   { label: 'Demography', href: '/demography' },
   { label: 'Candidates', href: '/candidates' },
   { label: 'Methodology', href: '/methodology' },
+  { label: 'Constitution', href: '/constitution' },
 ]
 
 const UPDATES = [
