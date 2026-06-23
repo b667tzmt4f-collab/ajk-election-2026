@@ -89,22 +89,23 @@ export default function Constitution() {
   return (
     <Layout>
       <h2 className="text-2xl font-bold mb-1 font-display">Constitutional Framework</h2>
-      <p className="text-sm text-gray-400 mb-6">
+      <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
         AJK Interim Constitution 1974 · Legislative Assembly &amp; General Elections ·
         All citations reference the primary text.
       </p>
 
       {/* Tab bar */}
-      <div className="flex gap-1 mb-6 border-b border-gray-800">
+      <div className="flex gap-1 mb-6" style={{ borderBottom: '1px solid var(--border)' }}>
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className="px-4 py-2 text-sm font-medium transition-colors"
+            style={
               tab === t.id
-                ? 'text-white border-b-2 border-white -mb-px'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
+                ? { color: 'var(--text)', borderBottom: '2px solid var(--text)', marginBottom: '-1px' }
+                : { color: 'var(--muted)' }
+            }
           >
             {t.label}
           </button>
@@ -117,44 +118,44 @@ export default function Constitution() {
 
           <div className="card">
             <div className="flex items-baseline gap-3 mb-4">
-              <h3 className="font-bold text-white">Assembly Composition</h3>
-              <span className="text-xs text-gray-500">Art. 22(1)</span>
-              <span className="ml-auto text-2xl font-bold text-white font-display">53</span>
-              <span className="text-xs text-gray-500">total seats</span>
+              <h3 className="font-bold" style={{ color: 'var(--text)' }}>Assembly Composition</h3>
+              <span className="text-xs font-mono" style={{ color: 'var(--muted)' }}>Art. 22(1)</span>
+              <span className="ml-auto text-2xl font-bold font-display" style={{ color: 'var(--text)' }}>53</span>
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>total seats</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-xs text-gray-500 uppercase border-b border-gray-800">
+                  <tr className="text-xs uppercase" style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
                     <th className="text-left pb-2 pr-4">Category</th>
                     <th className="text-center pb-2 px-4">Seats</th>
                     <th className="text-left pb-2 pl-4">Electoral Method</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800">
+                <tbody>
                   {COMPOSITION.map(row => (
-                    <tr key={row.category}>
-                      <td className="py-2 pr-4 text-gray-300">{row.category}</td>
-                      <td className="py-2 px-4 text-center font-bold text-white">{row.seats}</td>
-                      <td className="py-2 pl-4 text-gray-500 text-xs">{row.method}</td>
+                    <tr key={row.category} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td className="py-2 pr-4" style={{ color: 'var(--text3)' }}>{row.category}</td>
+                      <td className="py-2 px-4 text-center font-bold" style={{ color: 'var(--text)' }}>{row.seats}</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: 'var(--muted)' }}>{row.method}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-gray-600 mt-3">
+            <p className="text-xs mt-3" style={{ color: 'var(--muted)' }}>
               Term: 5 years from date of first meeting. Expiry operates as dissolution — Art. 22(3).
               Women, Ulema, Overseas, and Technocrat seats are elected by the 45 directly elected members only.
             </p>
           </div>
 
           <div className="card">
-            <h3 className="font-bold text-white mb-4">
+            <h3 className="font-bold mb-4" style={{ color: 'var(--text)' }}>
               Qualifications &amp; Disqualifications{' '}
-              <span className="text-xs text-gray-500 font-normal ml-2">Art. 24</span>
+              <span className="text-xs font-normal ml-2 font-mono" style={{ color: 'var(--muted)' }}>Art. 24</span>
             </h3>
             <div className="mb-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase mb-2">To qualify, a candidate must:</p>
+              <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--muted)' }}>To qualify, a candidate must:</p>
               <ul className="space-y-1 text-sm">
                 {[
                   { condition: 'Be a State Subject', clause: 'Art. 24(1)(a)' },
@@ -162,29 +163,29 @@ export default function Constitution() {
                   { condition: 'Have name on electoral roll (AJK or Pakistan)', clause: 'Art. 24(1)(c)' },
                 ].map(q => (
                   <li key={q.clause} className="flex justify-between">
-                    <span className="text-gray-300">{q.condition}</span>
-                    <span className="text-xs text-gray-600 font-mono">{q.clause}</span>
+                    <span style={{ color: 'var(--text3)' }}>{q.condition}</span>
+                    <span className="text-xs font-mono" style={{ color: 'var(--muted)' }}>{q.clause}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="border-t border-gray-800 pt-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Disqualifying grounds:</p>
+            <div className="pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+              <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--muted)' }}>Disqualifying grounds:</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-xs text-gray-600 border-b border-gray-800">
+                    <tr className="text-xs" style={{ borderBottom: '1px solid var(--border)', color: 'var(--muted)' }}>
                       <th className="text-left pb-1 pr-4">Ground</th>
                       <th className="text-left pb-1 px-4">Lifted after</th>
                       <th className="text-right pb-1 pl-4">Clause</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-800">
+                  <tbody>
                     {DISQUALIFICATIONS.map(d => (
-                      <tr key={d.clause}>
-                        <td className="py-2 pr-4 text-gray-300">{d.ground}</td>
-                        <td className="py-2 px-4 text-gray-500 text-xs">{d.lifted}</td>
-                        <td className="py-2 pl-4 text-right text-xs text-gray-600 font-mono">{d.clause}</td>
+                      <tr key={d.clause} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td className="py-2 pr-4" style={{ color: 'var(--text3)' }}>{d.ground}</td>
+                        <td className="py-2 px-4 text-xs" style={{ color: 'var(--muted)' }}>{d.lifted}</td>
+                        <td className="py-2 pl-4 text-right text-xs font-mono" style={{ color: 'var(--muted)' }}>{d.clause}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -194,19 +195,19 @@ export default function Constitution() {
           </div>
 
           <div className="card">
-            <h3 className="font-bold text-white mb-3">
+            <h3 className="font-bold mb-3" style={{ color: 'var(--text)' }}>
               Seat Vacation Rules{' '}
-              <span className="text-xs text-gray-500 font-normal ml-2">Art. 25</span>
+              <span className="text-xs font-normal ml-2 font-mono" style={{ color: 'var(--muted)' }}>Art. 25</span>
             </h3>
-            <ul className="text-sm text-gray-400 space-y-1.5 list-disc list-inside">
+            <ul className="text-sm space-y-1.5 list-disc list-inside" style={{ color: 'var(--text3)' }}>
               <li>Written resignation to Speaker — Art. 25(1)(a)</li>
-              <li>Absent without leave for <strong className="text-gray-200">30 consecutive sitting days</strong> — Art. 25(1)(b)</li>
-              <li>Failure to take oath within <strong className="text-gray-200">90 days</strong> of election (extendable by Speaker for good cause) — Art. 25(1)(c)</li>
+              <li>Absent without leave for <strong style={{ color: 'var(--text)' }}>30 consecutive sitting days</strong> — Art. 25(1)(b)</li>
+              <li>Failure to take oath within <strong style={{ color: 'var(--text)' }}>90 days</strong> of election (extendable by Speaker for good cause) — Art. 25(1)(c)</li>
               <li>Election to Council membership — Art. 25(1)(d)</li>
-              <li>Multi-seat: must resign all but one within <strong className="text-gray-200">30 days</strong> of last result — Art. 25(1-A)</li>
+              <li>Multi-seat: must resign all but one within <strong style={{ color: 'var(--text)' }}>30 days</strong> of last result — Art. 25(1-A)</li>
             </ul>
-            <div className="mt-3 p-3 bg-gray-800 rounded text-xs text-gray-400">
-              <span className="text-gray-200 font-semibold">Disqualification disputes:</span> Speaker refers to
+            <div className="mt-3 p-3 rounded text-xs" style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>
+              <span className="font-semibold" style={{ color: 'var(--text)' }}>Disqualification disputes:</span> Speaker refers to
               Chief Election Commissioner. CEC opinion is{' '}
               <span className="text-amber-400">constitutionally final</span> — no judicial review prescribed. Art. 25(2).
             </div>
@@ -223,25 +224,25 @@ export default function Constitution() {
             {TIMELINES.map(t => (
               <div key={t.scenario} className="card">
                 <p className={`text-xs font-semibold uppercase mb-1 ${t.color}`}>{t.scenario}</p>
-                <p className="text-xs text-gray-600 font-mono mb-2">{t.article}</p>
-                <p className="text-sm text-gray-300 mb-1">
-                  <span className="text-gray-500">Poll window: </span>{t.window}
+                <p className="text-xs font-mono mb-2" style={{ color: 'var(--muted)' }}>{t.article}</p>
+                <p className="text-sm mb-1" style={{ color: 'var(--text3)' }}>
+                  <span style={{ color: 'var(--muted)' }}>Poll window: </span>{t.window}
                 </p>
-                <p className="text-sm text-gray-300">
-                  <span className="text-gray-500">Results: </span>{t.result}
+                <p className="text-sm" style={{ color: 'var(--text3)' }}>
+                  <span style={{ color: 'var(--muted)' }}>Results: </span>{t.result}
                 </p>
               </div>
             ))}
           </div>
 
           <div className="card">
-            <h3 className="font-bold text-white mb-4">Step-by-Step Procedure</h3>
+            <h3 className="font-bold mb-4" style={{ color: 'var(--text)' }}>Step-by-Step Procedure</h3>
 
             {/* Two paths */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               {ELECTION_PATHS.map(path => (
                 <div key={path.path} className={`border-l-2 ${path.borderColor} pl-4`}>
-                  <p className="text-xs font-semibold text-gray-400 uppercase mb-3">{path.label}</p>
+                  <p className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--text3)' }}>{path.label}</p>
                   <div className="space-y-3">
                     {path.steps.map((s, i) => (
                       <div key={i} className="flex gap-3">
@@ -249,8 +250,8 @@ export default function Constitution() {
                           {i + 1}
                         </span>
                         <div>
-                          <p className="text-sm text-gray-200">{s.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{s.note}</p>
+                          <p className="text-sm" style={{ color: 'var(--text)' }}>{s.title}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{s.note}</p>
                         </div>
                       </div>
                     ))}
@@ -260,17 +261,18 @@ export default function Constitution() {
             </div>
 
             {/* Merge */}
-            <div className="border-t border-gray-800 pt-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Both paths converge here</p>
+            <div className="pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+              <p className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--muted)' }}>Both paths converge here</p>
               <div className="space-y-3">
                 {POST_ELECTION.map((s, i) => (
                   <div key={i} className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-700 text-xs font-bold text-gray-200 flex items-center justify-center">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center"
+                          style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>
                       {i + 4}
                     </span>
                     <div>
-                      <p className="text-sm text-gray-200">{s.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{s.note}</p>
+                      <p className="text-sm" style={{ color: 'var(--text)' }}>{s.title}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{s.note}</p>
                     </div>
                   </div>
                 ))}
@@ -278,11 +280,11 @@ export default function Constitution() {
             </div>
           </div>
 
-          <div className="card border border-red-900/40">
+          <div className="card" style={{ borderColor: 'rgba(153,27,27,0.4)' }}>
             <p className="text-xs font-semibold text-red-400 uppercase mb-1">Constitutional gap — Art. 56-A</p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm" style={{ color: 'var(--text3)' }}>
               Failure to act within any prescribed period does{' '}
-              <strong className="text-gray-200">not</strong> invalidate the act itself. All mandatory
+              <strong style={{ color: 'var(--text)' }}>not</strong> invalidate the act itself. All mandatory
               timelines above are therefore unenforceable in court — political convention is the only
               practical mechanism for compliance.
             </p>
@@ -296,9 +298,9 @@ export default function Constitution() {
         <div className="space-y-6 max-w-4xl">
 
           <div className="card">
-            <h3 className="font-bold text-white mb-4">
+            <h3 className="font-bold mb-4" style={{ color: 'var(--text)' }}>
               Election Commission Composition{' '}
-              <span className="text-xs text-gray-500 font-normal ml-2">Art. 50</span>
+              <span className="text-xs font-normal ml-2 font-mono" style={{ color: 'var(--muted)' }}>Art. 50</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
               <div className="space-y-2">
@@ -310,23 +312,23 @@ export default function Constitution() {
                   { label: 'Qualification', value: 'Former Judge (SC/HC) or BPS-21+ civil servant' },
                 ].map(r => (
                   <div key={r.label} className="flex justify-between gap-4">
-                    <span className="text-gray-500">{r.label}</span>
-                    <span className="text-gray-200 text-right">{r.value}</span>
+                    <span style={{ color: 'var(--muted)' }}>{r.label}</span>
+                    <span className="text-right" style={{ color: 'var(--text3)' }}>{r.value}</span>
                   </div>
                 ))}
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Commissioner appointed by</p>
-                  <p className="text-gray-300">President on advice of AJK Council Chairman (= PM of Pakistan) — Art. 50(3)</p>
+                  <p className="text-xs mb-0.5" style={{ color: 'var(--muted)' }}>Commissioner appointed by</p>
+                  <p style={{ color: 'var(--text3)' }}>President on advice of AJK Council Chairman (= PM of Pakistan) — Art. 50(3)</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Members appointed by</p>
-                  <p className="text-gray-300">President on advice of AJK Prime Minister — Art. 50(6)</p>
+                  <p className="text-xs mb-0.5" style={{ color: 'var(--muted)' }}>Members appointed by</p>
+                  <p style={{ color: 'var(--text3)' }}>President on advice of AJK Prime Minister — Art. 50(6)</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Opposition check</p>
-                  <p className="text-gray-300">AJK PM must consult Leader of Opposition before nominating Commissioner — Art. 50(4). Advisory only.</p>
+                  <p className="text-xs mb-0.5" style={{ color: 'var(--muted)' }}>Opposition check</p>
+                  <p style={{ color: 'var(--text3)' }}>AJK PM must consult Leader of Opposition before nominating Commissioner — Art. 50(4). Advisory only.</p>
                 </div>
               </div>
             </div>
@@ -338,19 +340,19 @@ export default function Constitution() {
               <ul className="space-y-2">
                 {INDEPENDENCE_STRENGTHS.map(s => (
                   <li key={s.article} className="flex justify-between gap-2">
-                    <span className="text-sm text-gray-300">{s.label}</span>
-                    <span className="text-xs text-gray-600 font-mono flex-shrink-0">{s.article}</span>
+                    <span className="text-sm" style={{ color: 'var(--text3)' }}>{s.label}</span>
+                    <span className="text-xs font-mono flex-shrink-0" style={{ color: 'var(--muted)' }}>{s.article}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="card border border-red-900/30">
+            <div className="card" style={{ borderColor: 'rgba(153,27,27,0.3)' }}>
               <p className="text-xs font-semibold text-red-400 uppercase mb-3">Structural gaps</p>
               <ul className="space-y-2">
                 {INDEPENDENCE_GAPS.map(g => (
                   <li key={g.article} className="flex justify-between gap-2">
-                    <span className="text-sm text-gray-400">{g.label}</span>
-                    <span className="text-xs text-gray-600 font-mono flex-shrink-0">{g.article}</span>
+                    <span className="text-sm" style={{ color: 'var(--text3)' }}>{g.label}</span>
+                    <span className="text-xs font-mono flex-shrink-0" style={{ color: 'var(--muted)' }}>{g.article}</span>
                   </li>
                 ))}
               </ul>
@@ -358,12 +360,12 @@ export default function Constitution() {
           </div>
 
           <div className="card">
-            <h3 className="font-bold text-white mb-2">Critical Analysis</h3>
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <h3 className="font-bold mb-2" style={{ color: 'var(--text)' }}>Critical Analysis</h3>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text3)' }}>
               The Election Commission has constitutionally adequate{' '}
-              <span className="text-gray-200">formal</span> independence — tenure protection, oath
+              <span style={{ color: 'var(--text)' }}>formal</span> independence — tenure protection, oath
               requirements, and mandatory executive assistance. However, its{' '}
-              <span className="text-gray-200">structural</span> independence is compromised: the
+              <span style={{ color: 'var(--text)' }}>structural</span> independence is compromised: the
               appointment chain runs through the federal Pakistani executive (Commissioner) and the
               sitting AJK government (Members). The Opposition consultation under Art. 50(4) is
               advisory only — not a veto. The absence of a ring-fenced Commission budget and the
