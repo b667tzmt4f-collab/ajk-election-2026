@@ -94,8 +94,8 @@ export default function Records() {
         AJK General Elections 2011, 2016 and 2021 — official EC results
       </p>
 
-      {/* View tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      {/* View tabs — 2×2 grid on mobile, single row on md+ */}
+      <div className="grid grid-cols-2 md:flex gap-2 mb-6">
         {([
           ['overview',   'Overview'],
           ['seats',      'Seat by Seat'],
@@ -103,7 +103,7 @@ export default function Records() {
           ['three-way',  'Three-Election Table'],
         ] as const).map(([v,label]) => (
           <button key={v} onClick={() => setView(v)}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center"
             style={{
               backgroundColor: view===v ? 'var(--accent)' : 'var(--card-bg)',
               color: view===v ? '#fff' : 'var(--text2)',
@@ -156,7 +156,7 @@ export default function Records() {
           </select>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <StatCard label="Seats shown" value={yearRows.length} />
           <StatCard label="Dominant party"
             value={`${topParty[0]} (${topParty[1]})`}
@@ -164,7 +164,7 @@ export default function Records() {
           <StatCard label="Avg margin" value={avgMargin.toLocaleString()} sub="votes" />
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {yearRows.map(seat => {
             const pc = `${partyColor(seat.winner_party)}`
             return (
@@ -215,7 +215,7 @@ export default function Records() {
           </h3>
           <p className="text-xs mb-3 md:hidden" style={{color:'var(--text3)'}}>← Swipe to scroll →</p>
           <div className="overflow-x-auto -mx-5 px-5">
-          <table className="w-full text-sm border-collapse" style={{minWidth:'560px'}}>
+          <table className="w-full text-sm border-collapse" style={{minWidth:'520px'}}>
             <thead>
               <tr style={{backgroundColor:'var(--bg3)'}}>
                 {['Seat','Constituency','Div','2011 Party','2016 Party','2021 Party','Flips'].map(h => (
