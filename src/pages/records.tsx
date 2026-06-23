@@ -64,7 +64,7 @@ export default function Records() {
     return (
       <div className="space-y-2">
         {Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([party,n]) => {
-          const hex = `#${partyColor(party)}`
+          const hex = `${partyColor(party)}`
           return (
             <div key={party} className="flex items-center gap-2">
               <span className="text-xs w-20 text-right font-medium"
@@ -94,7 +94,7 @@ export default function Records() {
         AJK General Elections 2011, 2016 and 2021 — official EC results
       </p>
 
-      {/* View tabs — 2×2 on mobile, single row on md+ */}
+      {/* View tabs — 2×2 grid on mobile, single row on md+ */}
       <div className="grid grid-cols-2 md:flex gap-2 mb-6">
         {([
           ['overview',   'Overview'],
@@ -144,7 +144,7 @@ export default function Records() {
             <button key={y} onClick={() => setYear(y as any)}
               className="px-4 py-2 rounded-lg text-sm font-bold transition-colors"
               style={{
-                backgroundColor: yearTab===y ? `#${partyColor(topParty[0])}` : 'var(--card-bg)',
+                backgroundColor: yearTab===y ? `${partyColor(topParty[0])}` : 'var(--card-bg)',
                 color: yearTab===y ? '#fff' : 'var(--text2)',
                 border: '1px solid var(--border)',
               }}>
@@ -160,13 +160,13 @@ export default function Records() {
           <StatCard label="Seats shown" value={yearRows.length} />
           <StatCard label="Dominant party"
             value={`${topParty[0]} (${topParty[1]})`}
-            color={`#${partyColor(topParty[0])}`} />
+            color={`${partyColor(topParty[0])}`} />
           <StatCard label="Avg margin" value={avgMargin.toLocaleString()} sub="votes" />
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
           {yearRows.map(seat => {
-            const pc = `#${partyColor(seat.winner_party)}`
+            const pc = `${partyColor(seat.winner_party)}`
             return (
               <div key={seat.seat_id} className="card"
                    style={{ borderLeft:`4px solid ${pc}` }}>
@@ -232,13 +232,13 @@ export default function Records() {
                   <td className="py-2 px-3 text-xs font-medium">{r.name}</td>
                   <td className="py-2 px-3 text-xs" style={{color:'var(--text3)'}}>{r.div}</td>
                   <td className="py-2 px-3">
-                    {r.p11!=='—'&&<span className="badge text-white" style={{backgroundColor:`#${partyColor(r.p11)}`}}>{r.p11}</span>}
+                    {r.p11!=='—'&&<span className="badge text-white" style={{backgroundColor:`${partyColor(r.p11)}`}}>{r.p11}</span>}
                   </td>
                   <td className="py-2 px-3">
-                    {r.p16!=='—'&&<span className="badge text-white" style={{backgroundColor:`#${partyColor(r.p16)}`}}>{r.p16}</span>}
+                    {r.p16!=='—'&&<span className="badge text-white" style={{backgroundColor:`${partyColor(r.p16)}`}}>{r.p16}</span>}
                   </td>
                   <td className="py-2 px-3">
-                    {r.p21!=='—'&&<span className="badge text-white" style={{backgroundColor:`#${partyColor(r.p21)}`}}>{r.p21}</span>}
+                    {r.p21!=='—'&&<span className="badge text-white" style={{backgroundColor:`${partyColor(r.p21)}`}}>{r.p21}</span>}
                   </td>
                   <td className="py-2 px-3 text-center font-bold">
                     <span style={{color:r.flips===2?'#dc2626':r.flips===1?'#d97706':'#16a34a'}}>
@@ -307,7 +307,7 @@ export default function Records() {
                   {/* 2011 */}
                   <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w11}</td>
                   <td className="py-2 px-3">
-                    {r.p11!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`#${partyColor(r.p11)}`}}>{r.p11}</span>}
+                    {r.p11!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`${partyColor(r.p11)}`}}>{r.p11}</span>}
                   </td>
                   <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
                     {r.v11?.toLocaleString()??'—'}
@@ -315,7 +315,7 @@ export default function Records() {
                   {/* 2016 */}
                   <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w16}</td>
                   <td className="py-2 px-3">
-                    {r.p16!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`#${partyColor(r.p16)}`}}>{r.p16}</span>}
+                    {r.p16!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`${partyColor(r.p16)}`}}>{r.p16}</span>}
                   </td>
                   <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
                     {r.v16?.toLocaleString()??'—'}
@@ -323,7 +323,7 @@ export default function Records() {
                   {/* 2021 */}
                   <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w21}</td>
                   <td className="py-2 px-3">
-                    {r.p21!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`#${partyColor(r.p21)}`}}>{r.p21}</span>}
+                    {r.p21!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`${partyColor(r.p21)}`}}>{r.p21}</span>}
                   </td>
                   <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
                     {r.v21?.toLocaleString()??'—'}

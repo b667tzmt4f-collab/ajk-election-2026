@@ -107,7 +107,7 @@ export default function Demography() {
         <StatCard label="New voters" value="~377K" sub="at 2021 turnout rate" />
       </div>
 
-      {/* Controls — region select full width on mobile, sort buttons wrap to 3-per-row */}
+      {/* Controls */}
       <div className="flex flex-col md:flex-row gap-2 mb-4">
         <select value={region} onChange={e => setRegion(e.target.value)}
                 className="w-full md:w-auto">
