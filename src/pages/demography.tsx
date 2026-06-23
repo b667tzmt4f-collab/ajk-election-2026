@@ -139,26 +139,17 @@ export default function Demography() {
         </div>
       </div>
 
-      <div className="card overflow-x-auto">
+      <div className="card">
         <h3 className="text-sm font-semibold uppercase mb-1" style={{ color:'var(--text3)' }}>
           All {sorted.length} constituencies — 2021 vs 2026 rolls
         </h3>
-        <p className="text-xs mb-3 md:hidden" style={{ color:'var(--text3)' }}>← Swipe to scroll →</p>
-        <table className="w-full text-sm" style={{ tableLayout: 'fixed', minWidth: '420px' }}>
-          <colgroup>
-            <col style={{ width: '60px' }} />   {/* Seat */}
-            <col style={{ width: '120px' }} />  {/* Constituency */}
-            <col style={{ width: '68px' }} />   {/* Region */}
-            <col style={{ width: '70px' }} />   {/* 2021 voters */}
-            <col style={{ width: '120px' }} />  {/* 2021 MLA — name wraps */}
-            <col style={{ width: '76px' }} />   {/* 2026 voters */}
-            <col style={{ width: '76px' }} />   {/* New voters */}
-            <col style={{ width: '68px' }} />   {/* Growth % */}
-            <col style={{ width: '76px' }} />   {/* Male count */}
-            <col style={{ width: '58px' }} />   {/* Male % */}
-            <col style={{ width: '76px' }} />   {/* Female count */}
-            <col style={{ width: '58px' }} />   {/* Female % */}
-          </colgroup>
+        {/* Mobile: 8 cols visible. Desktop: all 12. No overflow-x-auto on wrapper —
+            hidden md:table-cell suppresses columns so the table fits within viewport. */}
+        <p className="text-xs mb-3 md:hidden" style={{ color:'var(--muted)' }}>
+          Showing key columns. Rotate for full view.
+        </p>
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm" style={{ tableLayout: 'auto' }}>
           <thead>
             <tr style={{ borderBottom:'2px solid var(--border)', backgroundColor:'var(--bg3)' }}>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-left"
@@ -167,7 +158,7 @@ export default function Demography() {
                   style={{ color:'var(--text3)' }}>Constituency</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-left hidden md:table-cell"
                   style={{ color:'var(--text3)' }}>Region</th>
-              <th className="py-2 px-2 text-xs uppercase font-semibold text-right"
+              <th className="py-2 px-2 text-xs uppercase font-semibold text-right hidden md:table-cell"
                   style={{ color:'var(--text3)' }}>2021</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-left hidden md:table-cell"
                   style={{ color:'var(--text3)' }}>2021 MLA</th>
@@ -175,12 +166,12 @@ export default function Demography() {
                   style={{ color:'var(--text3)' }}>2026</th>
               <SortTh label="New voters"  k="growth_num" current={sortBy} dir={sortDir} onSort={handleSort} />
               <SortTh label="Growth %"    k="growth_pct" current={sortBy} dir={sortDir} onSort={handleSort} />
-              <SortTh label="Male"        k="male_pct"   current={sortBy} dir={sortDir} onSort={handleSort} />
+              <SortTh label="Male %"      k="male_pct"   current={sortBy} dir={sortDir} onSort={handleSort} />
+              <SortTh label="Female %"    k="female_pct" current={sortBy} dir={sortDir} onSort={handleSort} />
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right hidden md:table-cell"
-                  style={{ color:'var(--text3)' }}>Male %</th>
-              <SortTh label="Female"      k="female_pct" current={sortBy} dir={sortDir} onSort={handleSort} />
+                  style={{ color:'var(--text3)' }}>Male #</th>
               <th className="py-2 px-2 text-xs uppercase font-semibold text-right hidden md:table-cell"
-                  style={{ color:'var(--text3)' }}>Female %</th>
+                  style={{ color:'var(--text3)' }}>Female #</th>
             </tr>
           </thead>
           <tbody>
@@ -195,17 +186,16 @@ export default function Demography() {
                     className="hover:opacity-80 transition-opacity">
                   <td className="py-2 px-2 text-xs font-mono font-semibold"
                       style={{ color:'var(--accent)' }}>{s.seat_id}</td>
-                  {/* Constituency — wraps inside fixed width instead of pushing table wide */}
                   <td className="py-2 px-2 text-xs font-medium leading-snug"
                       style={{ wordBreak:'break-word', overflowWrap:'anywhere' }}>
                     {s.seat_name}
                   </td>
+                  {/* hidden on mobile */}
                   <td className="py-2 px-2 text-xs hidden md:table-cell" style={{ color:'var(--text2)' }}>{s.region}</td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs"
+                  <td className="py-2 px-2 text-right tabular-nums text-xs hidden md:table-cell"
                       style={{ color:'var(--text3)' }}>
                     {s.registered_2021.toLocaleString()}
                   </td>
-                  {/* 2021 MLA — winner name + party badge */}
                   <td className="py-2 px-2 text-xs leading-snug hidden md:table-cell"
                       style={{ wordBreak:'break-word', overflowWrap:'anywhere' }}>
                     {winners[s.seat_id] ? (
@@ -219,6 +209,7 @@ export default function Demography() {
                       </>
                     ) : <span style={{ color:'var(--text3)' }}>—</span>}
                   </td>
+                  {/* always visible */}
                   <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold">
                     {s.registered_2026.toLocaleString()}
                   </td>
@@ -230,21 +221,22 @@ export default function Demography() {
                       style={{ color: growthPct > 20 ? '#16a34a' : growthPct < 0 ? '#dc2626' : 'var(--text)' }}>
                     {growthNum > 0 ? '+' : ''}{growthPct.toFixed(1)}%
                   </td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs hidden md:table-cell"
-                      style={{ color:'var(--text2)' }}>
-                    {s.registered_male_2026.toLocaleString()}
-                  </td>
                   <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color:'var(--text2)' }}>
                     {malePct.toFixed(1)}%
                   </td>
-                  <td className="py-2 px-2 text-right tabular-nums text-xs hidden md:table-cell"
-                      style={{ color:'var(--text2)' }}>
-                    {s.registered_female_2026.toLocaleString()}
-                  </td>
                   <td className="py-2 px-2 text-right tabular-nums text-xs"
                       style={{ color: femalePct > 49 ? '#16a34a' : 'var(--text2)' }}>
                     {femalePct.toFixed(1)}%
+                  </td>
+                  {/* hidden on mobile */}
+                  <td className="py-2 px-2 text-right tabular-nums text-xs hidden md:table-cell"
+                      style={{ color:'var(--text2)' }}>
+                    {s.registered_male_2026.toLocaleString()}
+                  </td>
+                  <td className="py-2 px-2 text-right tabular-nums text-xs hidden md:table-cell"
+                      style={{ color:'var(--text2)' }}>
+                    {s.registered_female_2026.toLocaleString()}
                   </td>
                 </tr>
               )
@@ -252,11 +244,11 @@ export default function Demography() {
           </tbody>
           <tfoot>
             <tr style={{ borderTop:'2px solid var(--border)', backgroundColor:'var(--bg3)' }}>
-              <td colSpan={3} className="py-2 px-2 text-xs font-semibold uppercase hidden md:table-cell"
+              <td colSpan={2} className="py-2 px-2 text-xs font-semibold uppercase"
                   style={{ color:'var(--text3)' }}>Total ({sorted.length} seats)</td>
-              <td colSpan={2} className="py-2 px-2 text-xs font-semibold uppercase md:hidden"
-                  style={{ color:'var(--text3)' }}>Total ({sorted.length} seats)</td>
-              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold hidden md:table-cell"
+                  style={{ color:'var(--text3)' }}>—</td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold hidden md:table-cell"
                   style={{ color:'var(--text3)' }}>
                 {base.reduce((s,c) => s+c.registered_2021,0).toLocaleString()}
               </td>
@@ -270,17 +262,18 @@ export default function Demography() {
               <td className="py-2 px-2 text-right tabular-nums text-xs font-bold" style={{ color:'#16a34a' }}>
                 +{growthPct}%
               </td>
-              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold hidden md:table-cell"
-                  style={{ color:'var(--text2)' }}>{male26.toLocaleString()}</td>
               <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
                   style={{ color:'var(--text2)' }}>{malePct}%</td>
-              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold hidden md:table-cell"
-                  style={{ color:'var(--text2)' }}>{female26.toLocaleString()}</td>
               <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold"
                   style={{ color:'var(--text2)' }}>{femPct}%</td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold hidden md:table-cell"
+                  style={{ color:'var(--text2)' }}>{male26.toLocaleString()}</td>
+              <td className="py-2 px-2 text-right tabular-nums text-xs font-semibold hidden md:table-cell"
+                  style={{ color:'var(--text2)' }}>{female26.toLocaleString()}</td>
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
     </Layout>
   )
