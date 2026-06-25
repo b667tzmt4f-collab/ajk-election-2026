@@ -1,22 +1,45 @@
+import Link from 'next/link'
+
 function Error({ statusCode, message }: { statusCode: number; message?: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white p-8">
-      <div className="max-w-lg text-center">
-        <h1 className="text-4xl font-bold mb-4 text-red-400">{statusCode || 'Error'}</h1>
-        <p className="text-gray-300 mb-6">{message || 'Something went wrong.'}</p>
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', backgroundColor: 'var(--bg)',
+      color: 'var(--text)', fontFamily: 'Hanken Grotesk, sans-serif',
+      padding: 32,
+    }}>
+      <div style={{ maxWidth: 480, textAlign: 'center' }}>
+        <p style={{ fontSize: 72, fontWeight: 500, margin: '0 0 8px',
+          color: 'var(--accent)', fontFamily: 'IBM Plex Mono, monospace' }}>
+          {statusCode || '!'}
+        </p>
+        <h1 style={{ fontSize: 22, fontWeight: 500, marginBottom: 8 }}>
+          {statusCode === 404 ? 'Page not found' : 'Something went wrong'}
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--text3)', marginBottom: 24 }}>
+          {message || 'An unexpected error occurred.'}
+        </p>
         {statusCode === 500 && (
-          <div className="bg-gray-900 rounded-lg p-4 text-left text-sm text-gray-400 mb-6">
-            <p className="font-semibold text-yellow-400 mb-2">Common causes:</p>
-            <ul className="space-y-1 list-disc list-inside">
-              <li>Missing or incorrect <code>.env.local</code> file</li>
+          <div style={{
+            backgroundColor: 'var(--bg3)', borderRadius: 8,
+            padding: '12px 16px', marginBottom: 24,
+            textAlign: 'left', fontSize: 13, color: 'var(--text2)',
+          }}>
+            <p style={{ fontWeight: 500, marginBottom: 6 }}>Common causes:</p>
+            <ul style={{ paddingLeft: 16, margin: 0, lineHeight: 1.8 }}>
+              <li>Missing or incorrect <code>.env.local</code></li>
               <li>Wrong Supabase URL or API key</li>
-              <li>Supabase tables not yet created (run SQL migrations)</li>
+              <li>Supabase tables not yet created</li>
             </ul>
           </div>
         )}
-        <a href="/" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
-          Try again
-        </a>
+        <Link href="/" style={{
+          display: 'inline-block', padding: '10px 24px',
+          backgroundColor: 'var(--accent)', color: '#fff',
+          borderRadius: 8, fontSize: 14, textDecoration: 'none',
+        }}>
+          Back to home
+        </Link>
       </div>
     </div>
   )

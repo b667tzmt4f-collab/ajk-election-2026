@@ -57,7 +57,6 @@ export default function Records() {
     }
   })
 
-  // ── Tally bar — FIXED: uses real party colours not muted cream ──
   function TallyBar({ year }:{ year:number }) {
     const t = TALLIES[year]
     const max = Math.max(...Object.values(t))
@@ -94,7 +93,6 @@ export default function Records() {
         AJK General Elections 2011, 2016 and 2021 — official EC results
       </p>
 
-      {/* View tabs — 2×2 on mobile via jsx media query, row on desktop */}
       <div className="lA-view-tabs" style={{ marginBottom: 24 }}>
         {([
           ['overview',   'Overview'],
@@ -113,34 +111,6 @@ export default function Records() {
           </button>
         ))}
       </div>
-
-      <style jsx>{`
-        .lA-view-tabs {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-        .lA-view-tab {
-          padding: 8px 16px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background-color 0.15s, color 0.15s;
-          text-align: center;
-        }
-        @media (max-width: 768px) {
-          .lA-view-tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-          }
-          .lA-view-tab {
-            padding: 10px 8px;
-            font-size: 13px;
-          }
-        }
-      `}</style>
 
       {/* ── OVERVIEW ─────────────────────────────── */}
       {view==='overview' && <>
@@ -293,19 +263,16 @@ export default function Records() {
                     style={{borderBottom:'2px solid var(--border)'}}>Seat</th>
                 <th className="text-left py-2.5 px-3 text-white font-semibold"
                     style={{borderBottom:'2px solid var(--border)'}}>Constituency</th>
-                {/* 2011 */}
                 <th colSpan={3} className="py-2.5 px-3 text-center font-semibold"
                     style={{backgroundColor:'#0A0A8C', color:'white',
                             borderBottom:'2px solid var(--border)', borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
                   2011 — PPP majority
                 </th>
-                {/* 2016 */}
                 <th colSpan={3} className="py-2.5 px-3 text-center font-semibold"
                     style={{backgroundColor:'#1B7A43', color:'white',
                             borderBottom:'2px solid var(--border)', borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
                   2016 — PML-N sweep
                 </th>
-                {/* 2021 */}
                 <th colSpan={3} className="py-2.5 px-3 text-center font-semibold"
                     style={{backgroundColor:'#E4002B', color:'white',
                             borderBottom:'2px solid var(--border)', borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
@@ -332,7 +299,6 @@ export default function Records() {
                   <td className="py-2 px-3 font-mono font-bold"
                       style={{color:'var(--accent)'}}>{r.sid}</td>
                   <td className="py-2 px-3 font-medium" style={{color:'var(--text)'}}>{r.name}</td>
-                  {/* 2011 */}
                   <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w11}</td>
                   <td className="py-2 px-3">
                     {r.p11!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`${partyColor(r.p11)}`}}>{r.p11}</span>}
@@ -340,7 +306,6 @@ export default function Records() {
                   <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
                     {r.v11?.toLocaleString()??'—'}
                   </td>
-                  {/* 2016 */}
                   <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w16}</td>
                   <td className="py-2 px-3">
                     {r.p16!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`${partyColor(r.p16)}`}}>{r.p16}</span>}
@@ -348,7 +313,6 @@ export default function Records() {
                   <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
                     {r.v16?.toLocaleString()??'—'}
                   </td>
-                  {/* 2021 */}
                   <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w21}</td>
                   <td className="py-2 px-3">
                     {r.p21!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:`${partyColor(r.p21)}`}}>{r.p21}</span>}

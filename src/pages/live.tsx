@@ -41,15 +41,22 @@ export default function LiveResults() {
         <div className="flex gap-2">
           {(['All', 'In-Region', 'Refugee'] as const).map((f) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                filter === f
-                  ? '' : ''
-              }`}
-            >
-              {f}
-            </button>
+  key={f}
+  onClick={() => setFilter(f)}
+  style={{
+    padding: '6px 14px',
+    borderRadius: 8,
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: '1px solid var(--border)',
+    backgroundColor: filter === f ? 'var(--accent)' : 'var(--bg3)',
+    color: filter === f ? '#fff' : 'var(--text2)',
+    transition: 'background-color 0.15s, color 0.15s',
+  }}
+>
+  {f}
+</button>
           ))}
         </div>
       </div>

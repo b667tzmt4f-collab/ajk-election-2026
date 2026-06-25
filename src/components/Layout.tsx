@@ -7,13 +7,14 @@ import { useTheme } from '@/hooks/useTheme'
 // are pixel-perfect consistent — same classes, same breakpoints, same behaviour.
 
 const NAV = [
-  { href: '/live',        label: 'Live' },
-  { href: '/projection',  label: 'Projection' },
-  { href: '/records',     label: 'Records' },
-  { href: '/map',         label: 'Map' },
-  { href: '/demography',  label: 'Demography' },
-  { href: '/candidates',  label: 'Candidates' },
-  { href: '/methodology', label: 'Methodology' },
+  { href: '/live',         label: 'Live' },
+  { href: '/projection',   label: 'Projection' },
+  { href: '/records',      label: 'Records' },
+  { href: '/map',          label: 'Map' },
+  { href: '/demography',   label: 'Demography' },
+  { href: '/candidates',   label: 'Candidates' },
+  { href: '/methodology',  label: 'Methodology' },
+  { href: '/constitution', label: 'Constitution' },
 ]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
