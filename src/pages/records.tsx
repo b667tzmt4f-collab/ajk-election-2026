@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { supabase, partyColor } from '@/lib/supabase'
+import { numSort } from '@/lib/utils'
 
 type Row = {
   seat_id: string; seat_name: string; division: string; region_type: string
@@ -9,10 +10,6 @@ type Row = {
   runner_up: string; runner_up_party: string; runner_up_votes: number
   total_votes_polled: number; margin_votes: number
 }
-
-const numSort = (a: string, b: string) =>
-  parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
-
 const TALLIES: Record<number, Record<string, number>> = {
   2011: { PPP:22, 'PML-N':10, AJKMC:4, MQM:2, Independent:1, PMLQ:1 },
   2016: { 'PML-N':31, PPP:3, AJKMC:3, PTI:2, Independent:1, JKPP:1 },

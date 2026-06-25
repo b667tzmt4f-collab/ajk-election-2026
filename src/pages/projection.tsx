@@ -32,8 +32,6 @@ const PIPELINE = [
     detail:'Manual review of toss-up seats. Published with confidence ratings.' },
 ]
 
-const numSort = (a: string, b: string) =>
-  parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
 
 export default function Projection() {
   const [scores, setScores]     = useState<SeatScore[]>([])

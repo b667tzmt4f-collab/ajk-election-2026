@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase, partyColor } from '@/lib/supabase'
+import { SEAT_NAMES } from '@/lib/seatNames'
+import { numSort } from '@/lib/utils'
 
-// Minimal type — only what we need
 type C = {
   id: number
   seat_id: string
@@ -11,12 +12,6 @@ type C = {
   party_2021: string
   rank_2021: number
 }
-
-const numSort = (a: string, b: string) =>
-  parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
-
-// Seat names — single source of truth, shared across all pages
-import { SEAT_NAMES } from '@/lib/seatNames'
 
 export default function Candidates() {
   const [candidates, setCandidates] = useState<C[]>([])
@@ -40,7 +35,7 @@ export default function Candidates() {
       })
   }, [])
 
-  const seats   = [...new Set(candidates.map(c => c.seat_id))].sort(numSort)
+  const seats = [...new Set(candidates.map(c => c.seat_id))].sort(numSort)
 
   const filtered = candidates.filter(c => {
     const q = search.toLowerCase()
@@ -53,7 +48,6 @@ export default function Candidates() {
     )
   })
 
-  // Group by seat for display
   const grouped: Record<string, C[]> = {}
   for (const c of filtered) {
     if (!grouped[c.seat_id]) grouped[c.seat_id] = []
@@ -69,7 +63,6 @@ export default function Candidates() {
         Will be updated when EC publishes 2026 final list
       </p>
 
-      {/* Error */}
       {dbError && (
         <div className="card mb-4" style={{borderLeft:'4px solid #dc2626'}}>
           <p className="font-semibold text-sm mb-1" style={{color:'#dc2626'}}>
@@ -103,7 +96,6 @@ export default function Candidates() {
 
       {candidates.length > 0 && (
         <>
-          {/* Search + filter */}
           <div className="flex flex-wrap gap-3 mb-4">
             <input
               type="text"
@@ -124,7 +116,6 @@ export default function Candidates() {
             {filtered.length} candidates across {groupedSeats.length} constituencies
           </p>
 
-          {/* Table — constituency header rows + candidate rows */}
           <div className="card overflow-x-auto p-0">
             <table className="w-full text-sm border-collapse">
               <thead>
@@ -146,7 +137,6 @@ export default function Candidates() {
               <tbody>
                 {groupedSeats.map((sid, gi) => (
                   <>
-                    {/* Constituency divider row */}
                     <tr key={`hdr-${sid}`}
                         style={{backgroundColor:'var(--bg3)',
                                 borderTop: gi > 0 ? '2px solid var(--border)' : undefined}}>
@@ -155,18 +145,16 @@ export default function Candidates() {
                         {sid} — {SEAT_NAMES[sid] || sid}
                       </td>
                     </tr>
-                    {/* Candidate rows */}
                     {grouped[sid].map((c, ci) => (
                       <tr key={c.id}
                           style={{backgroundColor: ci%2===0 ? 'var(--card-bg)' : 'var(--bg3)',
                                   borderBottom:'1px solid var(--border)'}}>
                         <td className="py-2.5 px-4 text-xs" style={{color:'var(--text3)'}}>
-                          {/* blank — constituency shown in header row */}
                         </td>
                         <td className="py-2.5 px-4 font-medium">{c.candidate_name}</td>
                         <td className="py-2.5 px-4">
                           <span className="badge text-white"
-                                style={{backgroundColor:`#${partyColor(c.party_2026)}`}}>
+                                style={{backgroundColor: partyColor(c.party_2026)}}>
                             {c.party_2026}
                           </span>
                         </td>

@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { supabase, Constituency, partyColor } from '@/lib/supabase'
-
-const numSort = (a: string, b: string) =>
-  parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])
+import { numSort } from '@/lib/utils'
 
 type SortKey = 'seat' | 'growth_pct' | 'growth_num' | 'female_pct' | 'male_pct'
 type SortDir = 'desc' | 'asc'
