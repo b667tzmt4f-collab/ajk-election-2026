@@ -3,6 +3,7 @@ import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { supabase, partyColor } from '@/lib/supabase'
 import { SEAT_NAMES } from '@/lib/seatNames'
+import { numSort } from '@/lib/utils'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /projection — Public-facing 2026 seat-by-seat projection.
