@@ -1,31 +1,36 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase, Candidate, Constituency } from '@/lib/supabase'
 
-// ── useLiveResults ────────────────────────────────────────────────────────────
-// Subscribes to Supabase real-time on the candidates table.
-// Updates the moment any vote count changes — no polling, no refresh.
-
 export function useLiveResults() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [constituencies, setConstituencies] = useState<Constituency[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const fetchAll = useCallback(async () => {
-    const [{ data: cands }, { data: seats }] = await Promise.all([
-      supabase.from('candidates').select('*').order('seat_id').order('rank_2021'),
-      supabase.from('constituencies').select('*').order('seat_id'),
-    ])
-    if (cands) setCandidates(cands)
-    if (seats) setConstituencies(seats)
-    setLastUpdated(new Date())
-    setLoading(false)
+    try {
+      const [{ data: cands, error: candsErr }, { data: seats, error: seatsErr }] =
+        await Promise.all([
+          supabase.from('candidates').select('*').order('seat_id').order('rank_2021'),
+          supabase.from('constituencies').select('*').order('seat_id'),
+        ])
+      if (candsErr) throw new Error(candsErr.message)
+      if (seatsErr) throw new Error(seatsErr.message)
+      if (cands) setCandidates(cands)
+      if (seats) setConstituencies(seats)
+      setError(null)
+      setLastUpdated(new Date())
+    } catch (err: any) {
+      setError(err.message || 'Failed to load results')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
     fetchAll()
 
-    // Real-time subscription — fires instantly when votes_2026 changes
     const channel = supabase
       .channel('live-votes')
       .on(
@@ -47,7 +52,6 @@ export function useLiveResults() {
     return () => { supabase.removeChannel(channel) }
   }, [fetchAll])
 
-  // ── Derived seat-level results ────────────────────────────────────────────
   const seatResults = constituencies.map((seat) => {
     const seatCands = candidates
       .filter((c) => c.seat_id === seat.seat_id)
@@ -72,7 +76,6 @@ export function useLiveResults() {
   const seatsDecided = seatResults.filter((s) => s.has_results)
   const seatsPending = seatResults.filter((s) => !s.has_results)
 
-  // Party tally from declared seats
   const partyTally: Record<string, number> = {}
   for (const s of seatsDecided) {
     if (s.winner) {
@@ -88,6 +91,7 @@ export function useLiveResults() {
     seatsPending,
     partyTally,
     loading,
+    error,
     lastUpdated,
     refetch: fetchAll,
   }
