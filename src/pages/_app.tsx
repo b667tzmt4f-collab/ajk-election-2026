@@ -7,11 +7,13 @@ import Footer from '@/components/Footer'
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <ErrorBoundary>
-      <Header />
-      <main style={{ flex: 1 }}>
-        <Component {...pageProps} />
-      </main>
-      <Footer />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Header />
+        <main style={{ flex: 1 }}>
+          <Component {...pageProps} />
+        </main>
+        <Footer />
+      </div>
     </ErrorBoundary>
   )
 }

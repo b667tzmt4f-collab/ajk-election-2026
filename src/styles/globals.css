@@ -53,7 +53,7 @@
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
 }
@@ -184,4 +184,9 @@ thead tr:first-child th:first-child { border-radius: 0; }
     max-width: 100%;
     min-width: 0;
   }
+}
+/* ── Smooth scroll + anchor offset for sticky header ── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 64px;
 }

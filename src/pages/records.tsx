@@ -79,10 +79,6 @@ export default function Records() {
     )
   }
 
-  if (loading) return (
-    <Layout><div className="text-center py-20" style={{color:'var(--text2)'}}>Loading...</div></Layout>
-  )
-
   return (
     <Layout>
       <h2 className="text-2xl font-bold mb-1 font-display">Election Records</h2>
