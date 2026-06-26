@@ -283,8 +283,29 @@ export default function Records() {
 
           return (
             <div className="sbs-year-col" style={{ borderColor: 'var(--border)' }}>
-              {/* Year header */}
-              <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
+              {/* Year header with key stats */}
+              <div style={{ marginBottom: 14 }}>
+                <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
+                <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
+                  {row.margin_votes != null && (
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Margin</div>
+                      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
+                        {row.margin_votes.toLocaleString()}
+                        {marginPct && <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text3)', marginLeft: 4 }}>({marginPct}%)</span>}
+                      </div>
+                    </div>
+                  )}
+                  {total != null && (
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Polled</div>
+                      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
+                        {total.toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {fullCands.length > 0 ? (
                 /* ── Full candidate list (2021) ── */
@@ -409,19 +430,7 @@ export default function Records() {
                 </>
               )}
 
-              {/* Footer stats */}
-              <div className="sbs-footer" style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
-                {row.margin_votes != null && (
-                  <span>Margin: <strong style={{ color: 'var(--text2)' }}>
-                    {row.margin_votes.toLocaleString()}{marginPct ? ` (${marginPct}%)` : ''}
-                  </strong></span>
-                )}
-                {total != null && (
-                  <span>Polled: <strong style={{ color: 'var(--text2)' }}>
-                    {total.toLocaleString()}
-                  </strong></span>
-                )}
-              </div>
+
             </div>
           )
         }
