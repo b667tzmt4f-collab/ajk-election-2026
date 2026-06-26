@@ -14,6 +14,9 @@ type CandRow = {
   seat_id: string; election_year: number; rank: number
   candidate_name: string; party: string; votes: number; vote_share_pct: number
 }
+type DemRow = {
+  seat_id: string; registered_2021: number
+}
 const TALLIES: Record<number, Record<string, number>> = {
   2011: { PPP:22, 'PML-N':10, AJKMC:4, MQM:2, Independent:1, PMLQ:1 },
   2016: { 'PML-N':31, PPP:3, AJKMC:3, PTI:2, Independent:1, JKPP:1 },
@@ -30,12 +33,15 @@ export default function Records() {
   const [view, setView]       = useState<'overview'|'seats'|'compare'|'three-way'>('overview')
   const [selectedSeat, setSelectedSeat] = useState<string>('LA-1')
   const [candData, setCandData] = useState<CandRow[]>([])
+  const [demData,  setDemData]  = useState<DemRow[]>([])
 
   useEffect(() => {
     supabase.from('elections_history').select('*')
       .then(({ data: d }) => { setData(d || []); setLoading(false) })
     supabase.from('candidate_results').select('*')
       .then(({ data: d }) => { setCandData(d || []) })
+    supabase.from('constituencies').select('seat_id, registered_2021')
+      .then(({ data: d }) => { setDemData(d || []) })
   }, [])
 
   const yearRows = data
@@ -244,193 +250,227 @@ export default function Records() {
 
       {/* ── SEAT BY SEAT ─────────────────────────── */}
       {view==='seats' && (() => {
-        // All unique seat IDs in order
         const seatIds = [...new Set(data.map(r => r.seat_id))].sort(numSort)
         const seatIdx = seatIds.indexOf(selectedSeat)
         const prevSeat = seatIdx > 0 ? seatIds[seatIdx - 1] : null
         const nextSeat = seatIdx < seatIds.length - 1 ? seatIds[seatIdx + 1] : null
+        const seatRow  = (y: number) => data.find(r => r.seat_id === selectedSeat && r.election_year === y)
+        const seatName = seatRow(2021)?.seat_name ?? seatRow(2016)?.seat_name ?? seatRow(2011)?.seat_name ?? selectedSeat
+        const division = seatRow(2021)?.division ?? seatRow(2016)?.division ?? seatRow(2011)?.division ?? ''
 
-        // Get the seat name for display
-        const seatName = data.find(r => r.seat_id === selectedSeat)?.seat_name ?? selectedSeat
+        // Year tab — 2021 first
+        const yearTabs = [2021, 2016, 2011] as const
 
-        // Per-year data for selected seat
-        const yr = (y: number) => data.find(r => r.seat_id === selectedSeat && r.election_year === y)
+        const YearTable = ({ year }: { year: number }) => {
+          const row = seatRow(year)
 
-        // Render one year column
-        const YearCol = ({ year }: { year: number }) => {
-          const row = yr(year)
-          if (!row) return (
-            <div className="sbs-year-col" style={{ borderColor: 'var(--border)' }}>
-              <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
-              <p className="text-xs mt-6 text-center" style={{ color: 'var(--text3)' }}>No data</p>
-            </div>
-          )
-
-          // For 2021: use full candidate list from candidate_results
-          // For 2011/2016: fall back to winner + runner-up from elections_history
-          const fullCands = candData
+          // Full candidate list from candidate_results (all years now)
+          const cands = candData
             .filter(c => c.seat_id === selectedSeat && c.election_year === year)
             .sort((a, b) => a.rank - b.rank)
 
-          const total     = row.total_votes_polled
-          const marginPct = total && row.margin_votes
-            ? ((row.margin_votes / total) * 100).toFixed(1) : null
+          // Header stats
+          const polled      = row?.total_votes_polled ?? null
+          const margin      = row?.margin_votes ?? null
+          const winner      = row?.winner ?? '—'
+          const winnerParty = row?.winner_party ?? '—'
 
-          // Max votes in this column (for bar scaling)
-          const maxVotes = fullCands.length > 0
-            ? fullCands[0].votes
-            : Math.max(row.winner_votes || 0, row.runner_up_votes || 0)
+          // Registered voters from constituencies table (2021 data)
+          const registered  = demData.find(d => d.seat_id === selectedSeat)?.registered_2021 ?? null
+          const turnoutPct  = registered && polled
+            ? ((polled / registered) * 100).toFixed(1) : null
+
+          if (!row && cands.length === 0) return (
+            <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+              <p style={{ color: 'var(--text3)', fontSize: 14 }}>No data available for {year}</p>
+            </div>
+          )
+
+          const isPartial = cands.length > 0 &&
+            cands.length <= 2 &&
+            year !== 2021
 
           return (
-            <div className="sbs-year-col" style={{ borderColor: 'var(--border)' }}>
-              {/* Year header with key stats */}
-              <div style={{ marginBottom: 14 }}>
-                <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
-                  {row.margin_votes != null && (
-                    <div>
-                      <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Margin</div>
-                      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
-                        {row.margin_votes.toLocaleString()}
-                        {marginPct && <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text3)', marginLeft: 4 }}>({marginPct}%)</span>}
-                      </div>
-                    </div>
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              {/* ── Result summary header ── */}
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)',
+                            backgroundColor: 'var(--bg3)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 24px', alignItems: 'baseline' }}>
+                  {/* Winner */}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                    Winner: {winner}
+                  </span>
+                  <span className="badge text-white"
+                        style={{ backgroundColor: partyColor(winnerParty), fontSize: 10 }}>
+                    {winnerParty}
+                  </span>
+                  {/* Margin */}
+                  {margin != null && (
+                    <span style={{ fontSize: 12, color: 'var(--text3)' }}>
+                      Won by <strong style={{ color: 'var(--text2)' }}>{margin.toLocaleString()}</strong> votes
+                    </span>
                   )}
-                  {total != null && (
-                    <div>
-                      <div style={{ fontSize: 10, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Polled</div>
-                      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
-                        {total.toLocaleString()}
-                      </div>
-                    </div>
+                </div>
+                {/* Stats row */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 24px', marginTop: 8 }}>
+                  {registered != null && (
+                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+                      Registered: <strong style={{ color: 'var(--text2)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                        {registered.toLocaleString()}
+                      </strong>
+                    </span>
+                  )}
+                  {polled != null && (
+                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+                      Polled: <strong style={{ color: 'var(--text2)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                        {polled.toLocaleString()}
+                      </strong>
+                    </span>
+                  )}
+                  {turnoutPct != null && (
+                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+                      Turnout: <strong style={{ color: 'var(--text2)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                        {turnoutPct}%
+                      </strong>
+                    </span>
+                  )}
+                  {isPartial && (
+                    <span style={{ fontSize: 11, color: 'var(--text3)', fontStyle: 'italic' }}>
+                      · Partial data — top candidates only
+                    </span>
                   )}
                 </div>
               </div>
 
-              {fullCands.length > 0 ? (
-                /* ── Full candidate list (2021) ── */
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {fullCands.map((c, i) => {
-                    const isWinner = i === 0
-                    const color    = partyColor(c.party)
-                    const barWidth = maxVotes > 0 ? (c.votes / maxVotes) * 100 : 0
-                    return (
-                      <div key={c.rank}>
-                        {/* Divider between winner and rest */}
-                        {i === 1 && (
-                          <div className="sbs-divider" style={{ borderColor: 'var(--border)', marginBottom: 10 }} />
-                        )}
-                        <div className="sbs-cand-inner" style={{ marginBottom: 3 }}>
-                          <span
-                            className={isWinner ? 'sbs-badge text-white' : 'sbs-badge sbs-badge-ghost'}
-                            style={isWinner
-                              ? { backgroundColor: color }
-                              : { borderColor: color, color }}>
-                            {c.party}
-                          </span>
-                          <span
-                            className="sbs-cand-name"
+              {/* ── Candidate table ── */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--bg3)',
+                                 borderBottom: '2px solid var(--border)' }}>
+                      <th style={{ padding: '8px 12px', textAlign: 'right', width: 40,
+                                   color: 'var(--text3)', fontSize: 11, fontWeight: 600,
+                                   textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        #
+                      </th>
+                      <th style={{ padding: '8px 12px', textAlign: 'left',
+                                   color: 'var(--text3)', fontSize: 11, fontWeight: 600,
+                                   textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Candidate
+                      </th>
+                      <th style={{ padding: '8px 12px', textAlign: 'left',
+                                   color: 'var(--text3)', fontSize: 11, fontWeight: 600,
+                                   textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Party
+                      </th>
+                      <th style={{ padding: '8px 12px', textAlign: 'right',
+                                   color: 'var(--text3)', fontSize: 11, fontWeight: 600,
+                                   textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Votes
+                      </th>
+                      <th style={{ padding: '8px 12px', textAlign: 'right',
+                                   color: 'var(--text3)', fontSize: 11, fontWeight: 600,
+                                   textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Share %
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cands.length > 0 ? cands.map((c, i) => {
+                      const isWinner = i === 0
+                      const color    = partyColor(c.party)
+                      return (
+                        <tr key={c.rank}
                             style={{
-                              color: isWinner ? 'var(--text)' : 'var(--text2)',
+                              backgroundColor: isWinner
+                                ? `${color}11`
+                                : i % 2 === 0 ? 'var(--card-bg)' : 'var(--bg3)',
+                              borderBottom: '1px solid var(--border)',
                               fontWeight: isWinner ? 700 : 400,
-                              fontSize: isWinner ? 13 : 12,
                             }}>
+                          <td style={{ padding: '9px 12px', textAlign: 'right',
+                                       fontFamily: 'IBM Plex Mono, monospace', fontSize: 12,
+                                       color: 'var(--text3)' }}>
+                            {c.rank}
+                          </td>
+                          <td style={{ padding: '9px 12px', color: isWinner ? 'var(--text)' : 'var(--text2)' }}>
                             {c.candidate_name}
-                          </span>
-                        </div>
-                        <div className="sbs-cand-votes" style={{ marginBottom: 3 }}>
-                          <span className="sbs-votes-num"
-                                style={{ color: isWinner ? color : 'var(--text2)' }}>
+                          </td>
+                          <td style={{ padding: '9px 12px' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '2px 7px',
+                              borderRadius: 4,
+                              fontSize: 10,
+                              fontWeight: 700,
+                              fontFamily: 'IBM Plex Mono, monospace',
+                              backgroundColor: isWinner ? color : 'transparent',
+                              color: isWinner ? '#fff' : color,
+                              border: isWinner ? 'none' : `1px solid ${color}`,
+                            }}>
+                              {c.party}
+                            </span>
+                          </td>
+                          <td style={{ padding: '9px 12px', textAlign: 'right',
+                                       fontFamily: 'IBM Plex Mono, monospace', fontSize: 13,
+                                       color: isWinner ? color : 'var(--text2)' }}>
                             {c.votes.toLocaleString()}
-                          </span>
-                          <span className="sbs-share" style={{ color: 'var(--text3)' }}>
+                          </td>
+                          <td style={{ padding: '9px 12px', textAlign: 'right',
+                                       fontFamily: 'IBM Plex Mono, monospace', fontSize: 12,
+                                       color: 'var(--text3)' }}>
                             {c.vote_share_pct}%
-                          </span>
-                        </div>
-                        <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
-                          <div className="sbs-bar-fill"
-                               style={{
-                                 width: `${barWidth}%`,
-                                 backgroundColor: color,
-                                 opacity: isWinner ? 1 : 0.45,
-                               }} />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                /* ── Winner + runner-up fallback (2011, 2016) ── */
-                <>
-                  <div className="sbs-cand-row sbs-winner">
-                    <div className="sbs-cand-inner">
-                      <span className="sbs-badge text-white"
-                            style={{ backgroundColor: partyColor(row.winner_party) }}>
-                        {row.winner_party}
-                      </span>
-                      <span className="sbs-cand-name sbs-winner-name"
-                            style={{ color: 'var(--text)' }}>
-                        {row.winner}
-                      </span>
-                    </div>
-                    <div className="sbs-cand-votes">
-                      <span className="sbs-votes-num" style={{ color: partyColor(row.winner_party) }}>
-                        {row.winner_votes?.toLocaleString() ?? '—'}
-                      </span>
-                      {total && (
-                        <span className="sbs-share" style={{ color: 'var(--text3)' }}>
-                          {((row.winner_votes / total) * 100).toFixed(1)}%
-                        </span>
-                      )}
-                    </div>
-                    {total && (
-                      <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
-                        <div className="sbs-bar-fill"
-                             style={{ width: `${(row.winner_votes / total) * 100}%`,
-                                      backgroundColor: partyColor(row.winner_party) }} />
-                      </div>
+                          </td>
+                        </tr>
+                      )
+                    }) : (
+                      /* Fallback: winner + runner-up from elections_history */
+                      row && [
+                        { rank: 1, name: row.winner, party: row.winner_party, votes: row.winner_votes },
+                        { rank: 2, name: row.runner_up, party: row.runner_up_party, votes: row.runner_up_votes },
+                      ].filter(r => r.name).map((r, i) => {
+                        const isWinner = i === 0
+                        const color    = partyColor(r.party)
+                        const share    = polled ? ((r.votes / polled) * 100).toFixed(1) : '—'
+                        return (
+                          <tr key={r.rank}
+                              style={{
+                                backgroundColor: isWinner ? `${color}11` : 'var(--card-bg)',
+                                borderBottom: '1px solid var(--border)',
+                                fontWeight: isWinner ? 700 : 400,
+                              }}>
+                            <td style={{ padding: '9px 12px', textAlign: 'right',
+                                         fontFamily: 'IBM Plex Mono, monospace', fontSize: 12,
+                                         color: 'var(--text3)' }}>{r.rank}</td>
+                            <td style={{ padding: '9px 12px', color: isWinner ? 'var(--text)' : 'var(--text2)' }}>
+                              {r.name}
+                            </td>
+                            <td style={{ padding: '9px 12px' }}>
+                              <span style={{
+                                display: 'inline-block', padding: '2px 7px', borderRadius: 4,
+                                fontSize: 10, fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace',
+                                backgroundColor: isWinner ? color : 'transparent',
+                                color: isWinner ? '#fff' : color,
+                                border: isWinner ? 'none' : `1px solid ${color}`,
+                              }}>{r.party}</span>
+                            </td>
+                            <td style={{ padding: '9px 12px', textAlign: 'right',
+                                         fontFamily: 'IBM Plex Mono, monospace', fontSize: 13,
+                                         color: isWinner ? color : 'var(--text2)' }}>
+                              {r.votes?.toLocaleString() ?? '—'}
+                            </td>
+                            <td style={{ padding: '9px 12px', textAlign: 'right',
+                                         fontFamily: 'IBM Plex Mono, monospace', fontSize: 12,
+                                         color: 'var(--text3)' }}>
+                              {share}%
+                            </td>
+                          </tr>
+                        )
+                      })
                     )}
-                  </div>
-
-                  <div className="sbs-divider" style={{ borderColor: 'var(--border)' }} />
-
-                  <div className="sbs-cand-row">
-                    <div className="sbs-cand-inner">
-                      <span className="sbs-badge sbs-badge-ghost"
-                            style={{ borderColor: partyColor(row.runner_up_party),
-                                     color: partyColor(row.runner_up_party) }}>
-                        {row.runner_up_party}
-                      </span>
-                      <span className="sbs-cand-name" style={{ color: 'var(--text2)' }}>
-                        {row.runner_up}
-                      </span>
-                    </div>
-                    <div className="sbs-cand-votes">
-                      <span className="sbs-votes-num" style={{ color: 'var(--text2)' }}>
-                        {row.runner_up_votes?.toLocaleString() ?? '—'}
-                      </span>
-                      {total && (
-                        <span className="sbs-share" style={{ color: 'var(--text3)' }}>
-                          {((row.runner_up_votes / total) * 100).toFixed(1)}%
-                        </span>
-                      )}
-                    </div>
-                    {total && (
-                      <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
-                        <div className="sbs-bar-fill"
-                             style={{ width: `${(row.runner_up_votes / total) * 100}%`,
-                                      backgroundColor: partyColor(row.runner_up_party),
-                                      opacity: 0.5 }} />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs mt-3" style={{ color: 'var(--text3)', fontStyle: 'italic' }}>
-                    Partial data — top candidates only
-                  </p>
-                </>
-              )}
-
-
+                  </tbody>
+                </table>
+              </div>
             </div>
           )
         }
@@ -439,71 +479,61 @@ export default function Records() {
           <>
             {/* ── Seat selector bar ── */}
             <div className="sbs-selector-bar">
-              {/* Dropdown */}
               <select
                 value={selectedSeat}
                 onChange={e => setSelectedSeat(e.target.value)}
                 className="sbs-select"
-                style={{
-                  backgroundColor: 'var(--card-bg)',
-                  color: 'var(--text)',
-                  border: '1px solid var(--border)',
-                }}>
+                style={{ backgroundColor: 'var(--card-bg)', color: 'var(--text)',
+                         border: '1px solid var(--border)' }}>
                 {seatIds.map(sid => {
                   const name = data.find(r => r.seat_id === sid)?.seat_name ?? sid
                   return <option key={sid} value={sid}>{sid} — {name}</option>
                 })}
               </select>
-
-              {/* Prev / Next */}
               <div className="sbs-nav-btns">
-                <button
-                  onClick={() => prevSeat && setSelectedSeat(prevSeat)}
-                  disabled={!prevSeat}
-                  className="sbs-nav-btn"
-                  style={{
-                    backgroundColor: 'var(--card-bg)',
-                    color: prevSeat ? 'var(--text)' : 'var(--text3)',
-                    border: '1px solid var(--border)',
-                  }}>
-                  ←
-                </button>
-                <button
-                  onClick={() => nextSeat && setSelectedSeat(nextSeat)}
-                  disabled={!nextSeat}
-                  className="sbs-nav-btn"
-                  style={{
-                    backgroundColor: 'var(--card-bg)',
-                    color: nextSeat ? 'var(--text)' : 'var(--text3)',
-                    border: '1px solid var(--border)',
-                  }}>
-                  →
-                </button>
+                <button onClick={() => prevSeat && setSelectedSeat(prevSeat)}
+                  disabled={!prevSeat} className="sbs-nav-btn"
+                  style={{ backgroundColor: 'var(--card-bg)',
+                           color: prevSeat ? 'var(--text)' : 'var(--text3)',
+                           border: '1px solid var(--border)' }}>←</button>
+                <button onClick={() => nextSeat && setSelectedSeat(nextSeat)}
+                  disabled={!nextSeat} className="sbs-nav-btn"
+                  style={{ backgroundColor: 'var(--card-bg)',
+                           color: nextSeat ? 'var(--text)' : 'var(--text3)',
+                           border: '1px solid var(--border)' }}>→</button>
               </div>
             </div>
 
             {/* ── Seat header ── */}
-            <div className="sbs-seat-header">
-              <span className="sbs-seat-id" style={{ color: 'var(--accent)' }}>
-                {selectedSeat}
-              </span>
-              <span className="sbs-seat-name" style={{ color: 'var(--text)' }}>
-                {seatName}
-              </span>
-              <span className="sbs-seat-div" style={{ color: 'var(--text3)' }}>
-                {data.find(r => r.seat_id === selectedSeat)?.division ?? ''}
-              </span>
+            <div className="sbs-seat-header" style={{ marginBottom: 16 }}>
+              <span className="sbs-seat-id" style={{ color: 'var(--accent)' }}>{selectedSeat}</span>
+              <span className="sbs-seat-name" style={{ color: 'var(--text)' }}>{seatName}</span>
+              <span className="sbs-seat-div" style={{ color: 'var(--text3)' }}>{division}</span>
             </div>
 
-            {/* ── Three-column year panels ── */}
-            <div className="sbs-cols">
-              {YEARS.map(y => <YearCol key={y} year={y} />)}
+            {/* ── Year tabs ── */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+              {yearTabs.map(y => (
+                <button key={y} onClick={() => setYear(y as any)}
+                  style={{
+                    padding: '7px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                    cursor: 'pointer', border: '1px solid var(--border)',
+                    backgroundColor: yearTab === y ? 'var(--accent)' : 'var(--card-bg)',
+                    color: yearTab === y ? '#fff' : 'var(--text2)',
+                    transition: 'background-color 0.15s',
+                  }}>
+                  {y}
+                </button>
+              ))}
             </div>
+
+            {/* ── Active year table ── */}
+            <YearTable year={yearTab} />
           </>
         )
       })()}
 
-      {/* ── COMPARISON — vote-bank analysis ──────────────────── */}
+      {/* ── COMPARISON — vote-bank analysis      {/* ── COMPARISON — vote-bank analysis ──────────────────── */}
       {view==='compare' && <>
 
         {/* Stat cards */}
