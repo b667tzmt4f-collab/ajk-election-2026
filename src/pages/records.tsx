@@ -398,17 +398,8 @@ export default function Records() {
                             {c.candidate_name}
                           </td>
                           <td style={{ padding: '9px 12px' }}>
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '2px 7px',
-                              borderRadius: 4,
-                              fontSize: 10,
-                              fontWeight: 700,
-                              fontFamily: 'IBM Plex Mono, monospace',
-                              backgroundColor: isWinner ? color : 'transparent',
-                              color: isWinner ? '#fff' : color,
-                              border: isWinner ? 'none' : `1px solid ${color}`,
-                            }}>
+                            <span className="badge text-white"
+                                  style={{ backgroundColor: color, fontSize: 10 }}>
                               {c.party}
                             </span>
                           </td>
@@ -447,13 +438,10 @@ export default function Records() {
                               {r.name}
                             </td>
                             <td style={{ padding: '9px 12px' }}>
-                              <span style={{
-                                display: 'inline-block', padding: '2px 7px', borderRadius: 4,
-                                fontSize: 10, fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace',
-                                backgroundColor: isWinner ? color : 'transparent',
-                                color: isWinner ? '#fff' : color,
-                                border: isWinner ? 'none' : `1px solid ${color}`,
-                              }}>{r.party}</span>
+                              <span className="badge text-white"
+                                    style={{ backgroundColor: color, fontSize: 10 }}>
+                                {r.party}
+                              </span>
                             </td>
                             <td style={{ padding: '9px 12px', textAlign: 'right',
                                          fontFamily: 'IBM Plex Mono, monospace', fontSize: 13,
