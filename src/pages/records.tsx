@@ -24,6 +24,7 @@ export default function Records() {
   const [yearTab, setYear]    = useState<2011|2016|2021>(2021)
   const [div, setDiv]         = useState('All')
   const [view, setView]       = useState<'overview'|'seats'|'compare'|'three-way'>('overview')
+  const [selectedSeat, setSelectedSeat] = useState<string>('LA-1')
 
   useEffect(() => {
     supabase.from('elections_history').select('*')
@@ -235,60 +236,189 @@ export default function Records() {
       </>}
 
       {/* ── SEAT BY SEAT ─────────────────────────── */}
-      {view==='seats' && <>
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {YEARS.map(y => (
-            <button key={y} onClick={() => setYear(y as any)}
-              className="px-4 py-2 rounded-lg text-sm font-bold transition-colors"
-              style={{
-                backgroundColor: yearTab===y ? `${partyColor(topParty[0])}` : 'var(--card-bg)',
-                color: yearTab===y ? '#fff' : 'var(--text2)',
-                border: '1px solid var(--border)',
-              }}>
-              {y}
-            </button>
-          ))}
-          <select value={div} onChange={e => setDiv(e.target.value)}>
-            {DIVS.map(d => <option key={d}>{d}</option>)}
-          </select>
-        </div>
+      {view==='seats' && (() => {
+        // All unique seat IDs in order
+        const seatIds = [...new Set(data.map(r => r.seat_id))].sort(numSort)
+        const seatIdx = seatIds.indexOf(selectedSeat)
+        const prevSeat = seatIdx > 0 ? seatIds[seatIdx - 1] : null
+        const nextSeat = seatIdx < seatIds.length - 1 ? seatIds[seatIdx + 1] : null
 
-        <div className="grid md:grid-cols-3 gap-4 mb-4">
-          <StatCard label="Seats shown" value={yearRows.length} />
-          <StatCard label="Dominant party"
-            value={`${topParty[0]} (${topParty[1]})`}
-            color={`${partyColor(topParty[0])}`} />
-          <StatCard label="Avg margin" value={avgMargin.toLocaleString()} sub="votes" />
-        </div>
+        // Get the seat name for display
+        const seatName = data.find(r => r.seat_id === selectedSeat)?.seat_name ?? selectedSeat
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {yearRows.map(seat => {
-            const pc = `${partyColor(seat.winner_party)}`
-            return (
-              <div key={seat.seat_id} className="card"
-                   style={{ borderLeft:`4px solid ${pc}` }}>
-                <div className="flex justify-between items-start mb-1">
-                  <div>
-                    <span className="text-xs" style={{color:'var(--text3)'}}>
-                      {seat.seat_id} · {seat.division}
-                    </span>
-                    <p className="font-semibold text-sm leading-snug">{seat.seat_name}</p>
-                  </div>
-                  <span className="badge text-white ml-2"
-                        style={{backgroundColor:pc}}>{seat.winner_party}</span>
+        // Per-year data for selected seat
+        const yr = (y: number) => data.find(r => r.seat_id === selectedSeat && r.election_year === y)
+
+        // Render one year column
+        const YearCol = ({ year }: { year: number }) => {
+          const row = yr(year)
+          if (!row) return (
+            <div className="sbs-year-col" style={{ borderColor: 'var(--border)' }}>
+              <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
+              <p className="text-xs mt-6 text-center" style={{ color: 'var(--text3)' }}>No data</p>
+            </div>
+          )
+
+          const wColor  = partyColor(row.winner_party)
+          const ruColor = partyColor(row.runner_up_party)
+          const total   = row.total_votes_polled
+          const wShare  = total ? ((row.winner_votes / total) * 100).toFixed(1) : null
+          const ruShare = total ? ((row.runner_up_votes / total) * 100).toFixed(1) : null
+          const marginPct = total && row.margin_votes
+            ? ((row.margin_votes / total) * 100).toFixed(1) : null
+
+          return (
+            <div className="sbs-year-col" style={{ borderColor: 'var(--border)' }}>
+              {/* Year header */}
+              <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
+
+              {/* Winner row */}
+              <div className="sbs-cand-row sbs-winner">
+                <div className="sbs-cand-inner">
+                  <span className="sbs-badge text-white"
+                        style={{ backgroundColor: wColor }}>
+                    {row.winner_party}
+                  </span>
+                  <span className="sbs-cand-name sbs-winner-name"
+                        style={{ color: 'var(--text)' }}>
+                    {row.winner}
+                  </span>
                 </div>
-                <p className="font-bold" style={{color:pc}}>{seat.winner}</p>
-                <p className="text-xs mt-1" style={{color:'var(--text2)'}}>
-                  {seat.winner_votes?.toLocaleString()} votes · margin {seat.margin_votes?.toLocaleString()??'—'}
-                </p>
-                <p className="text-xs" style={{color:'var(--text3)'}}>
-                  Runner-up: {seat.runner_up} ({seat.runner_up_party}) · {seat.runner_up_votes?.toLocaleString()}
-                </p>
+                <div className="sbs-cand-votes">
+                  <span className="sbs-votes-num" style={{ color: wColor }}>
+                    {row.winner_votes?.toLocaleString() ?? '—'}
+                  </span>
+                  {wShare && (
+                    <span className="sbs-share" style={{ color: 'var(--text3)' }}>
+                      {wShare}%
+                    </span>
+                  )}
+                </div>
+                {/* Winner share bar */}
+                {wShare && (
+                  <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
+                    <div className="sbs-bar-fill"
+                         style={{ width: `${wShare}%`, backgroundColor: wColor }} />
+                  </div>
+                )}
               </div>
-            )
-          })}
-        </div>
-      </>}
+
+              {/* Divider */}
+              <div className="sbs-divider" style={{ borderColor: 'var(--border)' }} />
+
+              {/* Runner-up row */}
+              <div className="sbs-cand-row">
+                <div className="sbs-cand-inner">
+                  <span className="sbs-badge sbs-badge-ghost"
+                        style={{ borderColor: ruColor, color: ruColor }}>
+                    {row.runner_up_party}
+                  </span>
+                  <span className="sbs-cand-name" style={{ color: 'var(--text2)' }}>
+                    {row.runner_up}
+                  </span>
+                </div>
+                <div className="sbs-cand-votes">
+                  <span className="sbs-votes-num" style={{ color: 'var(--text2)' }}>
+                    {row.runner_up_votes?.toLocaleString() ?? '—'}
+                  </span>
+                  {ruShare && (
+                    <span className="sbs-share" style={{ color: 'var(--text3)' }}>
+                      {ruShare}%
+                    </span>
+                  )}
+                </div>
+                {ruShare && (
+                  <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
+                    <div className="sbs-bar-fill"
+                         style={{ width: `${ruShare}%`, backgroundColor: ruColor, opacity: 0.5 }} />
+                  </div>
+                )}
+              </div>
+
+              {/* Footer stats */}
+              <div className="sbs-footer" style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
+                {row.margin_votes != null && (
+                  <span>Margin: <strong style={{ color: 'var(--text2)' }}>
+                    {row.margin_votes.toLocaleString()}{marginPct ? ` (${marginPct}%)` : ''}
+                  </strong></span>
+                )}
+                {total != null && (
+                  <span>Polled: <strong style={{ color: 'var(--text2)' }}>
+                    {total.toLocaleString()}
+                  </strong></span>
+                )}
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <>
+            {/* ── Seat selector bar ── */}
+            <div className="sbs-selector-bar">
+              {/* Dropdown */}
+              <select
+                value={selectedSeat}
+                onChange={e => setSelectedSeat(e.target.value)}
+                className="sbs-select"
+                style={{
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--text)',
+                  border: '1px solid var(--border)',
+                }}>
+                {seatIds.map(sid => {
+                  const name = data.find(r => r.seat_id === sid)?.seat_name ?? sid
+                  return <option key={sid} value={sid}>{sid} — {name}</option>
+                })}
+              </select>
+
+              {/* Prev / Next */}
+              <div className="sbs-nav-btns">
+                <button
+                  onClick={() => prevSeat && setSelectedSeat(prevSeat)}
+                  disabled={!prevSeat}
+                  className="sbs-nav-btn"
+                  style={{
+                    backgroundColor: 'var(--card-bg)',
+                    color: prevSeat ? 'var(--text)' : 'var(--text3)',
+                    border: '1px solid var(--border)',
+                  }}>
+                  ←
+                </button>
+                <button
+                  onClick={() => nextSeat && setSelectedSeat(nextSeat)}
+                  disabled={!nextSeat}
+                  className="sbs-nav-btn"
+                  style={{
+                    backgroundColor: 'var(--card-bg)',
+                    color: nextSeat ? 'var(--text)' : 'var(--text3)',
+                    border: '1px solid var(--border)',
+                  }}>
+                  →
+                </button>
+              </div>
+            </div>
+
+            {/* ── Seat header ── */}
+            <div className="sbs-seat-header">
+              <span className="sbs-seat-id" style={{ color: 'var(--accent)' }}>
+                {selectedSeat}
+              </span>
+              <span className="sbs-seat-name" style={{ color: 'var(--text)' }}>
+                {seatName}
+              </span>
+              <span className="sbs-seat-div" style={{ color: 'var(--text3)' }}>
+                {data.find(r => r.seat_id === selectedSeat)?.division ?? ''}
+              </span>
+            </div>
+
+            {/* ── Three-column year panels ── */}
+            <div className="sbs-cols">
+              {YEARS.map(y => <YearCol key={y} year={y} />)}
+            </div>
+          </>
+        )
+      })()}
 
       {/* ── COMPARISON — vote-bank analysis ──────────────────── */}
       {view==='compare' && <>

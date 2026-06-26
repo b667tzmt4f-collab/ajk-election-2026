@@ -211,3 +211,170 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 64px;
 }
+
+/* ── Seat-by-Seat view (records page) ────────────────────── */
+.sbs-selector-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.sbs-select {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 0;
+}
+.sbs-nav-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.sbs-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+.sbs-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.sbs-seat-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.sbs-seat-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.sbs-seat-name {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Roboto', sans-serif;
+}
+.sbs-seat-div {
+  font-size: 12px;
+}
+/* Three year columns */
+.sbs-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.sbs-year-col {
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--card-bg);
+}
+.sbs-year-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.sbs-cand-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sbs-winner {
+  margin-bottom: 4px;
+}
+.sbs-cand-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.sbs-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.sbs-badge-ghost {
+  background: transparent !important;
+  border: 1px solid;
+}
+.sbs-cand-name {
+  font-size: 12px;
+  line-height: 1.3;
+  min-width: 0;
+  word-break: break-word;
+}
+.sbs-winner-name {
+  font-weight: 700;
+  font-size: 13px;
+}
+.sbs-cand-votes {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+}
+.sbs-votes-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+}
+.sbs-share {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+}
+.sbs-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.sbs-bar-fill {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.sbs-divider {
+  border-top: 1px solid;
+  margin: 12px 0;
+}
+.sbs-footer {
+  border-top: 1px solid;
+  margin-top: 14px;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+
+/* Mobile: stack year columns vertically */
+@media (max-width: 768px) {
+  .sbs-cols {
+    grid-template-columns: 1fr;
+  }
+  .sbs-selector-bar {
+    flex-wrap: wrap;
+  }
+  .sbs-select {
+    width: 100%;
+  }
+}
