@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
+import DevNote from '@/components/DevNote'
 import StatCard from '@/components/StatCard'
 import { supabase, partyColor } from '@/lib/supabase'
 import { SEAT_NAMES } from '@/lib/seatNames'
@@ -67,7 +68,12 @@ export default function Projection() {
   return (
     <Layout>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1 font-display">2026 Projection</h2>
+              <DevNote type="action" label="Stages 3 and 4 pending — deadline 27 July 2026">
+        KPI Model + Confidence Classification (Stage 3) and Final Adjudication (Stage 4)
+        are both Pending. Stage 3 requires KPI scores finalised in /score for all 45 seats.
+        Both must be complete before polling day.
+      </DevNote>
+<h2 className="text-2xl font-bold mb-1 font-display">2026 Projection</h2>
         <p className="text-sm" style={{ color: 'var(--text2)' }}>
           Candidate-based KPI model · {called.length} of 33 in-region seats scored ·
           Party weight applied where seat dynamics warrant it

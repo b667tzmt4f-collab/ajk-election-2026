@@ -3,6 +3,7 @@ import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { supabase, partyColor } from '@/lib/supabase'
 import { numSort } from '@/lib/utils'
+import DevNote from '@/components/DevNote'
 
 type Row = {
   seat_id: string; seat_name: string; division: string; region_type: string
@@ -203,6 +204,23 @@ export default function Records() {
       <p className="text-sm mb-6" style={{color:'var(--text2)'}}>
         AJK General Elections 2011, 2016 and 2021 — official EC results
       </p>
+      <DevNote type="missing" label="Source citation">
+        Each sub-tab and the constituency results table should display a visible source line:
+        "Source: AJK Election Commission — Official Results Booklet [year]". Currently no
+        citation is shown to the public reader. Add below each year header.
+      </DevNote>
+      <DevNote type="data" label="2011 / 2016 partial candidate data">
+        10 seats have no candidate data for 2011 and 2016 (LA-8, 15, 19-21, 24-25, 29-30, 35).
+        LA-3 has no general election data for either year (only a 2019 by-election).
+        For remaining seats, only top 3-4 candidates are available — not the full field.
+        Full EC result sheets for 2011 and 2016 need to be sourced.
+      </DevNote>
+      <DevNote type="action" label="Refugee seats — no contextual explanation">
+        LA-34 through LA-45 are refugee constituencies located across Pakistan.
+        There is no explanation anywhere on this page (or the site) of what refugee seats
+        are, why they exist, how they vote differently, or where they are geographically.
+        Add a callout or info section — critical for any first-time visitor.
+      </DevNote>
 
       <div className="lA-view-tabs" style={{ marginBottom: 24 }}>
         {([

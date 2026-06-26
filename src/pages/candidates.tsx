@@ -3,6 +3,7 @@ import Layout from '@/components/Layout'
 import { supabase, partyColor } from '@/lib/supabase'
 import { SEAT_NAMES } from '@/lib/seatNames'
 import { numSort } from '@/lib/utils'
+import DevNote from '@/components/DevNote'
 
 type C = {
   id: number
@@ -81,7 +82,21 @@ export default function Candidates() {
       {/* Main content */}
       {!loading && !dbError && (
         <>
-          <h2 className="text-2xl font-bold mb-1 font-display">2026 Candidate List</h2>
+          <DevNote type="action" label="Candidate list incomplete — 30 days to polling">
+          PTI candidates are currently listed as IND (ex-PTI) pending the EC final notified list.
+          This disclaimer undermines the page's credibility. The 2026 final candidate list must
+          be updated the moment EC publishes it — this is the most time-sensitive data on the site.
+        </DevNote>
+        <DevNote type="missing" label="No historical context per candidate">
+          The candidate list shows 2026 data only. There is no link from a candidate row
+          to their 2021 performance in the constituency results. Cross-referencing would
+          significantly increase the analytical value of this page.
+        </DevNote>
+        <DevNote type="missing" label="No last-updated timestamp">
+          The page has no "Last updated: [date]" indicator. Visitors — especially press —
+          need to know how current the data is.
+        </DevNote>
+        <h2 className="text-2xl font-bold mb-1 font-display">2026 Candidate List</h2>
           <p className="text-sm mb-5" style={{ color: 'var(--text2)' }}>
             Based on 2021 EC data · PTI shown as IND (ex-PTI) ·
             Will be updated when EC publishes 2026 final list

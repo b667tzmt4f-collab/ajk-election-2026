@@ -3,6 +3,7 @@ import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import { supabase, Constituency, partyColor } from '@/lib/supabase'
 import { numSort } from '@/lib/utils'
+import DevNote from '@/components/DevNote'
 
 type SortKey = 'seat' | 'growth_pct' | 'growth_num' | 'female_pct' | 'male_pct'
 type SortDir = 'desc' | 'asc'
@@ -89,7 +90,16 @@ export default function Demography() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-1 font-display">2026 Voter Demography</h2>
+              <DevNote type="missing" label="Female registration gap not flagged">
+          Seats where female voters are below 40% of registered voters should be flagged
+          with a --warn colour indicator. Analytically significant for turnout modelling.
+        </DevNote>
+        <DevNote type="missing" label="New voter pressure indicator not surfaced">
+          Seats where new voters since 2021 exceed the 2021 winning margin are the
+          genuinely swing-able seats in 2026. This calculation is in the data but not shown.
+          High priority before polling day.
+        </DevNote>
+<h2 className="text-2xl font-bold mb-1 font-display">2026 Voter Demography</h2>
       <p className="text-sm mb-6" style={{ color:'var(--text2)' }}>
         EC-notified electoral rolls, 22 May 2026
       </p>

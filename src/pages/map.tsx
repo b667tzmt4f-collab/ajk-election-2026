@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
+import DevNote from '@/components/DevNote'
 import StatCard from '@/components/StatCard'
 import AJKMap, { DistrictDatum } from '@/components/AJKMap'
 import { supabase, partyColor } from '@/lib/supabase'
@@ -129,7 +130,12 @@ export default function MapView() {
   return (
     <Layout>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1 font-display">Constituency Map</h2>
+        <h2 className="text-2xl font-bold mb-1 font-display">        <DevNote type="action" label="District-level only — no constituency boundaries">
+          Map shows 10 districts, not 45 constituencies. On election night this is the
+          most-visited page and it cannot show individual seat results. Constituency-level
+          GeoJSON needed for v2 — critical before 27 July 2026.
+        </DevNote>
+Constituency Map</h2>
         <p className="text-sm" style={{ color: 'var(--text2)' }}>
           AJK districts shaded by the dominant party in the 2021 general election.
           Tap a district for its seat breakdown. Constituency-level boundaries coming in a future update.

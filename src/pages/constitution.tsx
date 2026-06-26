@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Layout from '@/components/Layout'
+import DevNote from '@/components/DevNote'
 
 const COMPOSITION = [
   { category: 'AJK residents (directly elected)', seats: 33, method: 'State Subjects residing in AJK — adult franchise' },
@@ -84,7 +85,12 @@ export default function Constitution() {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-1 font-display">Constitutional Framework</h2>
+      <h2 className="text-2xl font-bold mb-1 font-display">      <DevNote type="extra" label="Consider removing this page entirely">
+        Analytics platform doesn't need to host constitutional text — publicly available
+        elsewhere. Already removed from nav. Consider removing or reducing to a paragraph
+        in Methodology.
+      </DevNote>
+Constitutional Framework</h2>
       <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
         AJK Interim Constitution 1974 · Legislative Assembly &amp; General Elections ·
         All citations reference the primary text.
