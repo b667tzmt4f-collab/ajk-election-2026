@@ -202,10 +202,10 @@ export default function Records() {
 
       <div className="lA-view-tabs" style={{ marginBottom: 24 }}>
         {([
-          ['overview',   'Overview'],
-          ['seats',      'Seat by Seat'],
-          ['compare',    'Comparison'],
-          ['three-way',  'Three-Election Table'],
+          ['overview',   'Party Tallies'],
+          ['seats',      'Constituency Results'],
+          ['compare',    'Vote-Bank Analysis'],
+          ['three-way',  'All Results'],
         ] as const).map(([v,label]) => (
           <button key={v} onClick={() => setView(v)}
             className="lA-view-tab"
