@@ -4,14 +4,11 @@ import { useTheme } from '@/hooks/useTheme'
 import { useState } from 'react'
 
 export const NAV = [
-  { href: '/live',         label: 'Live' },
-  { href: '/projection',   label: 'Projection' },
-  { href: '/records',      label: 'Records' },
-  { href: '/map',          label: 'Map' },
-  { href: '/demography',   label: 'Demography' },
-  { href: '/candidates',   label: 'Candidates' },
-  { href: '/methodology',  label: 'Methodology' },
-  { href: '/constitution', label: 'Constitution' },
+  { href: '/live',        label: 'Live' },
+  { href: '/records',     label: 'Records' },
+  { href: '/projection',  label: 'Projection' },
+  { href: '/map',         label: 'Map' },
+  { href: '/demography',  label: 'Demography' },
 ]
 
 export default function Header() {
