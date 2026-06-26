@@ -425,7 +425,7 @@ export default function Records() {
                     )}
                   </div>
                   <p className="text-xs mt-3" style={{ color: 'var(--text3)', fontStyle: 'italic' }}>
-                    Full candidate data not available for {year}
+                    Partial data — top candidates only
                   </p>
                 </>
               )}
