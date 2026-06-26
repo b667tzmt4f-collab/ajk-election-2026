@@ -17,19 +17,12 @@ type CandRow = {
 type DemRow = {
   seat_id: string; registered_2021: number
 }
-const TALLIES: Record<number, Record<string, number>> = {
-  2011: { PPP:22, 'PML-N':10, AJKMC:4, MQM:2, Independent:1, PMLQ:1 },
-  2016: { 'PML-N':31, PPP:3, AJKMC:3, PTI:2, Independent:1, JKPP:1 },
-  2021: { PTI:24, PPP:12, 'PML-N':7, AJKMC:1, JKPP:1 },
-}
 const YEARS = [2011, 2016, 2021] as const
-const DIVS  = ['All','Mirpur','Poonch','Muzaffarabad','Jammu & Valley']
 
 export default function Records() {
   const [data, setData]       = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [yearTab, setYear]    = useState<2011|2016|2021>(2021)
-  const [div, setDiv]         = useState('All')
   const [view, setView]       = useState<'overview'|'seats'|'compare'|'three-way'>('overview')
   const [selectedSeat, setSelectedSeat] = useState<string>('LA-1')
   const [candData, setCandData] = useState<CandRow[]>([])
@@ -44,14 +37,15 @@ export default function Records() {
       .then(({ data: d }) => { setDemData(d || []) })
   }, [])
 
-  const yearRows = data
-    .filter(r => r.election_year === yearTab && (div === 'All' || r.division === div))
-    .sort((a, b) => numSort(a.seat_id, b.seat_id))
-
-  const tally    = TALLIES[yearTab]
-  const topParty = Object.entries(tally).sort((a,b) => b[1]-a[1])[0]
-  const avgMargin = yearRows.length
-    ? Math.round(yearRows.reduce((s,r) => s+(r.margin_votes||0),0)/yearRows.length) : 0
+  // Compute party tallies live from elections_history data
+  const computeTally = (year: number): Record<string, number> => {
+    const rows = data.filter(r => r.election_year === year)
+    const tally: Record<string, number> = {}
+    for (const r of rows) {
+      tally[r.winner_party] = (tally[r.winner_party] || 0) + 1
+    }
+    return tally
+  }
 
   // ── Manual overrides ─────────────────────────────────────────────────────
   // Applied after algorithmic classification for seats where the data requires
@@ -175,12 +169,16 @@ export default function Records() {
   })
 
   function TallyBar({ year }:{ year:number }) {
-    const t = TALLIES[year]
-    const max = Math.max(...Object.values(t))
+    const t   = computeTally(year)
+    const entries = Object.entries(t).sort((a,b) => b[1]-a[1])
+    const max = entries.length ? entries[0][1] : 1
+    if (!entries.length) return (
+      <p className="text-xs" style={{ color:'var(--text3)' }}>Loading…</p>
+    )
     return (
       <div className="space-y-2">
-        {Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([party,n]) => {
-          const hex = `${partyColor(party)}`
+        {entries.map(([party, n]) => {
+          const hex = partyColor(party)
           return (
             <div key={party} className="flex items-center gap-2">
               <span className="text-xs w-20 text-right font-medium"
@@ -231,7 +229,11 @@ export default function Records() {
           {YEARS.map(y => (
             <div key={y} className="card">
               <h3 className="text-xs font-semibold uppercase mb-4" style={{color:'var(--text3)'}}>
-                {y} — {y===2011?'PPP majority':y===2016?'PML-N sweep':'PTI wins (post-tribunal)'}
+                {y} — {(() => {
+                  const t = computeTally(y)
+                  const top = Object.entries(t).sort((a,b)=>b[1]-a[1])[0]
+                  return top ? `${top[0]} — ${top[1]} seats` : '—'
+                })()}
               </h3>
               <TallyBar year={y} />
             </div>
@@ -240,10 +242,14 @@ export default function Records() {
         <div className="card">
           <h3 className="font-semibold mb-2">Anti-incumbency pattern</h3>
           <p className="text-sm leading-relaxed" style={{color:'var(--text2)'}}>
-            Every AJK election since 2011 was won by a different party. PPP dominated 2011 (22 seats),
-            PML-N swept 2016 (31 seats), PTI won 2021 (24 seats post-tribunal).
-            19 of 41 comparable seats changed hands at every election.
-            Anti-incumbency is the strongest structural predictor for 2026.
+            {(() => {
+              const t11 = computeTally(2011), t16 = computeTally(2016), t21 = computeTally(2021)
+              const top = (t: Record<string,number>) => Object.entries(t).sort((a,b)=>b[1]-a[1])[0]
+              const [p11,n11] = top(t11) ?? ['—',0]
+              const [p16,n16] = top(t16) ?? ['—',0]
+              const [p21,n21] = top(t21) ?? ['—',0]
+              return `Every AJK election since 2011 was won by a different party. ${p11} dominated 2011 (${n11} seats), ${p16} swept 2016 (${n16} seats), ${p21} won 2021 (${n21} seats). Anti-incumbency is the strongest structural predictor for 2026.`
+            })()}
           </p>
         </div>
       </>}
