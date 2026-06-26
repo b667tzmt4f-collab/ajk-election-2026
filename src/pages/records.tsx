@@ -10,6 +10,10 @@ type Row = {
   runner_up: string; runner_up_party: string; runner_up_votes: number
   total_votes_polled: number; margin_votes: number
 }
+type CandRow = {
+  seat_id: string; election_year: number; rank: number
+  candidate_name: string; party: string; votes: number; vote_share_pct: number
+}
 const TALLIES: Record<number, Record<string, number>> = {
   2011: { PPP:22, 'PML-N':10, AJKMC:4, MQM:2, Independent:1, PMLQ:1 },
   2016: { 'PML-N':31, PPP:3, AJKMC:3, PTI:2, Independent:1, JKPP:1 },
@@ -25,10 +29,13 @@ export default function Records() {
   const [div, setDiv]         = useState('All')
   const [view, setView]       = useState<'overview'|'seats'|'compare'|'three-way'>('overview')
   const [selectedSeat, setSelectedSeat] = useState<string>('LA-1')
+  const [candData, setCandData] = useState<CandRow[]>([])
 
   useEffect(() => {
     supabase.from('elections_history').select('*')
       .then(({ data: d }) => { setData(d || []); setLoading(false) })
+    supabase.from('candidate_results').select('*')
+      .then(({ data: d }) => { setCandData(d || []) })
   }, [])
 
   const yearRows = data
@@ -259,81 +266,148 @@ export default function Records() {
             </div>
           )
 
-          const wColor  = partyColor(row.winner_party)
-          const ruColor = partyColor(row.runner_up_party)
-          const total   = row.total_votes_polled
-          const wShare  = total ? ((row.winner_votes / total) * 100).toFixed(1) : null
-          const ruShare = total ? ((row.runner_up_votes / total) * 100).toFixed(1) : null
+          // For 2021: use full candidate list from candidate_results
+          // For 2011/2016: fall back to winner + runner-up from elections_history
+          const fullCands = candData
+            .filter(c => c.seat_id === selectedSeat && c.election_year === year)
+            .sort((a, b) => a.rank - b.rank)
+
+          const total     = row.total_votes_polled
           const marginPct = total && row.margin_votes
             ? ((row.margin_votes / total) * 100).toFixed(1) : null
+
+          // Max votes in this column (for bar scaling)
+          const maxVotes = fullCands.length > 0
+            ? fullCands[0].votes
+            : Math.max(row.winner_votes || 0, row.runner_up_votes || 0)
 
           return (
             <div className="sbs-year-col" style={{ borderColor: 'var(--border)' }}>
               {/* Year header */}
               <div className="sbs-year-label" style={{ color: 'var(--text3)' }}>{year}</div>
 
-              {/* Winner row */}
-              <div className="sbs-cand-row sbs-winner">
-                <div className="sbs-cand-inner">
-                  <span className="sbs-badge text-white"
-                        style={{ backgroundColor: wColor }}>
-                    {row.winner_party}
-                  </span>
-                  <span className="sbs-cand-name sbs-winner-name"
-                        style={{ color: 'var(--text)' }}>
-                    {row.winner}
-                  </span>
+              {fullCands.length > 0 ? (
+                /* ── Full candidate list (2021) ── */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {fullCands.map((c, i) => {
+                    const isWinner = i === 0
+                    const color    = partyColor(c.party)
+                    const barWidth = maxVotes > 0 ? (c.votes / maxVotes) * 100 : 0
+                    return (
+                      <div key={c.rank}>
+                        {/* Divider between winner and rest */}
+                        {i === 1 && (
+                          <div className="sbs-divider" style={{ borderColor: 'var(--border)', marginBottom: 10 }} />
+                        )}
+                        <div className="sbs-cand-inner" style={{ marginBottom: 3 }}>
+                          <span
+                            className={isWinner ? 'sbs-badge text-white' : 'sbs-badge sbs-badge-ghost'}
+                            style={isWinner
+                              ? { backgroundColor: color }
+                              : { borderColor: color, color }}>
+                            {c.party}
+                          </span>
+                          <span
+                            className="sbs-cand-name"
+                            style={{
+                              color: isWinner ? 'var(--text)' : 'var(--text2)',
+                              fontWeight: isWinner ? 700 : 400,
+                              fontSize: isWinner ? 13 : 12,
+                            }}>
+                            {c.candidate_name}
+                          </span>
+                        </div>
+                        <div className="sbs-cand-votes" style={{ marginBottom: 3 }}>
+                          <span className="sbs-votes-num"
+                                style={{ color: isWinner ? color : 'var(--text2)' }}>
+                            {c.votes.toLocaleString()}
+                          </span>
+                          <span className="sbs-share" style={{ color: 'var(--text3)' }}>
+                            {c.vote_share_pct}%
+                          </span>
+                        </div>
+                        <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
+                          <div className="sbs-bar-fill"
+                               style={{
+                                 width: `${barWidth}%`,
+                                 backgroundColor: color,
+                                 opacity: isWinner ? 1 : 0.45,
+                               }} />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-                <div className="sbs-cand-votes">
-                  <span className="sbs-votes-num" style={{ color: wColor }}>
-                    {row.winner_votes?.toLocaleString() ?? '—'}
-                  </span>
-                  {wShare && (
-                    <span className="sbs-share" style={{ color: 'var(--text3)' }}>
-                      {wShare}%
-                    </span>
-                  )}
-                </div>
-                {/* Winner share bar */}
-                {wShare && (
-                  <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
-                    <div className="sbs-bar-fill"
-                         style={{ width: `${wShare}%`, backgroundColor: wColor }} />
+              ) : (
+                /* ── Winner + runner-up fallback (2011, 2016) ── */
+                <>
+                  <div className="sbs-cand-row sbs-winner">
+                    <div className="sbs-cand-inner">
+                      <span className="sbs-badge text-white"
+                            style={{ backgroundColor: partyColor(row.winner_party) }}>
+                        {row.winner_party}
+                      </span>
+                      <span className="sbs-cand-name sbs-winner-name"
+                            style={{ color: 'var(--text)' }}>
+                        {row.winner}
+                      </span>
+                    </div>
+                    <div className="sbs-cand-votes">
+                      <span className="sbs-votes-num" style={{ color: partyColor(row.winner_party) }}>
+                        {row.winner_votes?.toLocaleString() ?? '—'}
+                      </span>
+                      {total && (
+                        <span className="sbs-share" style={{ color: 'var(--text3)' }}>
+                          {((row.winner_votes / total) * 100).toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+                    {total && (
+                      <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
+                        <div className="sbs-bar-fill"
+                             style={{ width: `${(row.winner_votes / total) * 100}%`,
+                                      backgroundColor: partyColor(row.winner_party) }} />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Divider */}
-              <div className="sbs-divider" style={{ borderColor: 'var(--border)' }} />
+                  <div className="sbs-divider" style={{ borderColor: 'var(--border)' }} />
 
-              {/* Runner-up row */}
-              <div className="sbs-cand-row">
-                <div className="sbs-cand-inner">
-                  <span className="sbs-badge sbs-badge-ghost"
-                        style={{ borderColor: ruColor, color: ruColor }}>
-                    {row.runner_up_party}
-                  </span>
-                  <span className="sbs-cand-name" style={{ color: 'var(--text2)' }}>
-                    {row.runner_up}
-                  </span>
-                </div>
-                <div className="sbs-cand-votes">
-                  <span className="sbs-votes-num" style={{ color: 'var(--text2)' }}>
-                    {row.runner_up_votes?.toLocaleString() ?? '—'}
-                  </span>
-                  {ruShare && (
-                    <span className="sbs-share" style={{ color: 'var(--text3)' }}>
-                      {ruShare}%
-                    </span>
-                  )}
-                </div>
-                {ruShare && (
-                  <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
-                    <div className="sbs-bar-fill"
-                         style={{ width: `${ruShare}%`, backgroundColor: ruColor, opacity: 0.5 }} />
+                  <div className="sbs-cand-row">
+                    <div className="sbs-cand-inner">
+                      <span className="sbs-badge sbs-badge-ghost"
+                            style={{ borderColor: partyColor(row.runner_up_party),
+                                     color: partyColor(row.runner_up_party) }}>
+                        {row.runner_up_party}
+                      </span>
+                      <span className="sbs-cand-name" style={{ color: 'var(--text2)' }}>
+                        {row.runner_up}
+                      </span>
+                    </div>
+                    <div className="sbs-cand-votes">
+                      <span className="sbs-votes-num" style={{ color: 'var(--text2)' }}>
+                        {row.runner_up_votes?.toLocaleString() ?? '—'}
+                      </span>
+                      {total && (
+                        <span className="sbs-share" style={{ color: 'var(--text3)' }}>
+                          {((row.runner_up_votes / total) * 100).toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+                    {total && (
+                      <div className="sbs-bar-track" style={{ backgroundColor: 'var(--bg3)' }}>
+                        <div className="sbs-bar-fill"
+                             style={{ width: `${(row.runner_up_votes / total) * 100}%`,
+                                      backgroundColor: partyColor(row.runner_up_party),
+                                      opacity: 0.5 }} />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                  <p className="text-xs mt-3" style={{ color: 'var(--text3)', fontStyle: 'italic' }}>
+                    Full candidate data not available for {year}
+                  </p>
+                </>
+              )}
 
               {/* Footer stats */}
               <div className="sbs-footer" style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
