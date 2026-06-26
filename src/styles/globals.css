@@ -23,12 +23,14 @@
   --text3:     #5B6675;
   --card-bg:   #ffffff;
   --input-bg:  #faf7f2;
-  --shadow:      rgba(12,19,32,0.06);
-  --shadow-deep:  rgba(12,19,32,0.10);
+  --shadow:    rgba(12,19,32,0.06);
   --accent:    #2C4A7C;
   --accent-h:  #22395F;
   --muted:     #5B6675;
   --soft:      #ECF1FF;
+  --positive:  #15a05a;
+  --negative:  #e0415e;
+  --warn:      #e8902a;
 }
 
 /* ── Dark mode ─────────────────────────────────────────────── */
@@ -42,12 +44,14 @@
   --text3:     #94a3b8;
   --card-bg:   #111827;
   --input-bg:  #1e2a3a;
-  --shadow:      rgba(0,0,0,0.35);
-  --shadow-deep:  rgba(0,0,0,0.50);
+  --shadow:    rgba(0,0,0,0.35);
   --accent:    #5B8DEF;
   --accent-h:  #7BA3F2;
   --muted:     #94a3b8;
   --soft:      #1B2A4A;
+  --positive:  #27b56a;
+  --negative:  #f4566f;
+  --warn:      #f0a03f;
 }
 
 * { box-sizing: border-box; }
@@ -55,13 +59,9 @@
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s, color 0.2s;
-}
-
-h1, h2, h3, h4 {
-  letter-spacing: -0.4px;
 }
 
 /* Display/serif headings — used for page <h1>/<h2> titles to echo the
@@ -77,11 +77,6 @@ h1, h2, h3, h4 {
 
 /* Monospace — used for figures, counters, stat values (matches landing
    page's countdown digits and metric callouts). */
-.font-heading {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-}
 .font-mono {
   font-family: 'IBM Plex Mono', monospace;
 }
@@ -89,9 +84,9 @@ h1, h2, h3, h4 {
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 0.875rem;        /* 14px — matches landing page card radius */
+  border-radius: 1.125rem;        /* 18px — rounder, modern card radius */
   padding: 1.25rem;
-  box-shadow: 0 1px 2px var(--shadow), 0 10px 26px -14px var(--shadow-deep);
+  box-shadow: 0 1px 2px var(--shadow);
   transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
 }
 
@@ -99,7 +94,7 @@ h1, h2, h3, h4 {
   display: inline-flex;
   align-items: center;
   padding: 3px 9px;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -275,7 +270,7 @@ html {
 .sbs-seat-name {
   font-size: 18px;
   font-weight: 700;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 .sbs-seat-div {
   font-size: 12px;
