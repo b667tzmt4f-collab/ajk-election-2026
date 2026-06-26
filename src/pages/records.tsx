@@ -8,7 +8,7 @@ type Row = {
   seat_id: string; seat_name: string; division: string; region_type: string
   election_year: number; winner: string; winner_party: string; winner_votes: number
   runner_up: string; runner_up_party: string; runner_up_votes: number
-  total_votes_polled: number; margin_votes: number
+  total_votes_polled: number; margin_votes: number; registered_voters: number
 }
 type CandRow = {
   seat_id: string; election_year: number; rank: number
@@ -269,14 +269,15 @@ export default function Records() {
             .filter(c => c.seat_id === selectedSeat && c.election_year === year)
             .sort((a, b) => a.rank - b.rank)
 
-          // Header stats
-          const polled      = row?.total_votes_polled ?? null
+          // Header stats — registered_voters and total_votes_polled now correct in DB
           const margin      = row?.margin_votes ?? null
           const winner      = row?.winner ?? '—'
           const winnerParty = row?.winner_party ?? '—'
-
-          // Registered voters from constituencies table (2021 data)
-          const registered  = demData.find(d => d.seat_id === selectedSeat)?.registered_2021 ?? null
+          const polled      = row?.total_votes_polled ?? null
+          // registered_voters col on elections_history (2021); fall back to constituencies table
+          const registered  = row?.registered_voters
+            ?? demData.find(d => d.seat_id === selectedSeat)?.registered_2021
+            ?? null
           const turnoutPct  = registered && polled
             ? ((polled / registered) * 100).toFixed(1) : null
 
