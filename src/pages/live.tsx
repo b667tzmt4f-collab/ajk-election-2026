@@ -4,6 +4,7 @@ import StatCard from '@/components/StatCard'
 import PartyTallyBar from '@/components/PartyTallyBar'
 import { useLiveResults } from '@/hooks/useLiveResults'
 import { partyColor } from '@/lib/supabase'
+import { fmt2021 } from '@/lib/utils'
 
 export default function LiveResults() {
   const {
@@ -231,7 +232,7 @@ export default function LiveResults() {
                             )}
                           </div>
                           <p className="text-xs" style={{ color: 'var(--text3)' }}>
-                            2021: {c.votes_2021.toLocaleString()}
+                            2021: {fmt2021(c.votes_2021)}
                           </p>
                         </div>
                       )

@@ -366,7 +366,7 @@ export default function MapView() {
                         {candidates.map((c, i) => {
                           const pct = ((c.votes_2021 || 0) / maxVotes) * 100
                           const isWinner = i === 0 || c.rank_2021 === 1
-                          const color = partyColor(c.party_2021)
+                          const color = partyColor(c.party_2021 || 'Other')
                           return (
                             <div key={c.id} className="rounded-lg overflow-hidden"
                                  style={{

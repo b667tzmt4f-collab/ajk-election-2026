@@ -35,12 +35,15 @@ export type Candidate = {
   id: number
   seat_id: string
   candidate_name: string
-  party_2021: string
+  party_2021: string | null
   party_2026: string
-  votes_2021: number
-  rank_2021: number
+  votes_2021: number | null
+  rank_2021: number | null
   votes_2026: number
   updated_at: string
+  ticket_status: 'declared' | 'confirmed' | 'withdrawn' | 'rejected'
+  ticket_source: string | null
+  ticket_updated_at: string
 }
 
 export const PARTY_COLORS: Record<string, string> = {

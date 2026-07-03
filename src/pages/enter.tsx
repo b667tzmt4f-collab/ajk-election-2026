@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
 import { supabase, Candidate } from '@/lib/supabase'
+import { fmt2021 } from '@/lib/utils'
 import { syncFromSheet, SyncResult } from '@/lib/sheetSync'
 
 const ENTRY_PASSWORD = process.env.NEXT_PUBLIC_ENTRY_PASSWORD || 'ajk2026'
@@ -254,7 +255,7 @@ export default function DataEntry() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{c.candidate_name}</p>
                     <p className="text-xs text-gray-500">
-                      {c.party_2026} · 2021: {c.votes_2021.toLocaleString()}
+                      {c.party_2026} · 2021: {fmt2021(c.votes_2021)}
                     </p>
                   </div>
                   <input
