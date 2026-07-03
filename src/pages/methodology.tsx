@@ -1,11 +1,7 @@
 import Layout from '@/components/Layout'
 import DevNote from '@/components/DevNote'
 
-export default function       <DevNote type="extra" label="Too technical for public audience">
-        Reads like internal documentation. Consider cutting to 2 paragraphs.
-        Already removed from header nav — content itself needs simplifying.
-      </DevNote>
-Methodology() {
+export default function Methodology() {
   return (
     <Layout>
       <h2 className="text-2xl font-bold mb-2 font-display">Methodology</h2>
