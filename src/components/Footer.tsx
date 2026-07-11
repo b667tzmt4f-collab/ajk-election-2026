@@ -63,6 +63,7 @@ export default function Footer() {
           <div style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text)', fontWeight: 700, marginBottom: 4 }}>
             Analysis
           </div>
+          <Link href="/analysis" style={{ fontSize: 13, color: 'var(--text3)', textDecoration: 'none' }}>Vote-bank analysis</Link>
           <Link href="/projection" style={{ fontSize: 13, color: 'var(--text3)', textDecoration: 'none' }}>2026 projection</Link>
           <Link href="/map" style={{ fontSize: 13, color: 'var(--text3)', textDecoration: 'none' }}>Constituency map</Link>
           <Link href="/methodology" style={{ fontSize: 13, color: 'var(--text3)', textDecoration: 'none' }}>Methodology</Link>

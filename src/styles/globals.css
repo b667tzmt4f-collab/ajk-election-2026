@@ -216,6 +216,7 @@ thead tr:first-child th:first-child { border-radius: 0; }
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 64px;
+  overflow-y: scroll;
 }
 
 /* ── Seat-by-Seat view (records page) ────────────────────── */
