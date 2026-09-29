@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { partyColor } from '@/lib/supabase'
 import { fetchTable } from '@/lib/api'
 import { useResults2026 } from '@/hooks/useResults2026'
+import {
+  SeatMode, SEAT_MODE_LABEL, ReservedRow, countBy, addTallies, tallyFor,
+  scaleFor, topOf, sortedEntries,
+} from '@/lib/tally'
 
 // 2021 seat tally, shown for comparison under the 2026 result.
 const FALLBACK_TALLY: { party: string; seats: number }[] = [
@@ -57,12 +61,35 @@ export default function Home() {
   const [tally, setTally] = useState(FALLBACK_TALLY) // 2021, for comparison
   const { seats, parties, declared, postponed, turnoutPct, loading } = useResults2026()
 
+  // Reserved members, same table as /live and /records (shared lib/tally.ts)
+  const [reserved, setReserved] = useState<ReservedRow[]>([])
+  const [bandMode, setBandMode] = useState<SeatMode>('all')
+  useEffect(() => {
+    fetchTable<ReservedRow>('reserved_seats_2026')
+      .then(setReserved)
+      .catch((err) => console.error('reserved_seats_2026 load failed:', err))
+  }, [])
+
   // 2026 general-seat tally (seats won at the ballot box, excl. reserved)
   const generalTally = parties.filter((p) => p.won_general > 0)
-  // 2026 full house tally (incl. reserved seats), used for the dot chart
-  const houseTally = parties.filter((p) => p.total_seats > 0)
-  const filled = houseTally.reduce((n, p) => n + p.total_seats, 0)
-  const leader = houseTally[0]
+  const genT: Record<string, number> =
+    Object.fromEntries(generalTally.map((p) => [p.party, p.won_general]))
+  const resT = countBy(reserved, (r) => r.party)
+  // House = elected + reserved rows. If reserved rows fail to load, fall
+  // back to the hook's stored total_seats so the band is never empty.
+  const houseT: Record<string, number> = reserved.length
+    ? addTallies(genT, resT)
+    : Object.fromEntries(parties.filter((p) => p.total_seats > 0).map((p) => [p.party, p.total_seats]))
+  const filled = Object.values(houseT).reduce((a, b) => a + b, 0)
+  const leaderTop = topOf(houseT)
+  const leader = leaderTop
+    ? { party: leaderTop[0], won_general: genT[leaderTop[0]] || 0, total_seats: leaderTop[1] }
+    : undefined
+
+  // Seat band: follows the All / Directly elected / Reserved toggle
+  const bandT = bandMode === 'all' ? houseT : tallyFor(bandMode, genT, resT)
+  const bandScale = scaleFor(bandMode)
+  const bandFilled = Object.values(bandT).reduce((a, b) => a + b, 0)
 
   useEffect(() => {
     fetchTable<{ winner_party_2021: string }>('constituencies')
@@ -82,7 +109,7 @@ export default function Home() {
   }, [])
 
   const dots: string[] = []
-  houseTally.forEach((t) => { for (let i = 0; i < t.total_seats; i++) dots.push(t.party) })
+  sortedEntries(bandT).forEach(([party, n]) => { for (let i = 0; i < n; i++) dots.push(party) })
   const seats2021 = (party: string) => tally.find((t) => t.party === party)?.seats ?? 0
 
   const Count = ({ v, l }: { v: string | number; l: string }) => (
@@ -188,26 +215,48 @@ export default function Home() {
       <section className="a-band">
         <div className="a-wrap a-bandin">
           <div className="a-stats">
-            <div className="a-stat"><div className="n">53</div><div className="l">Assembly seats</div></div>
-            <div className="a-stat"><div className="n">27</div><div className="l">For a majority</div></div>
-            <div className="a-stat"><div className="n">{filled || '—'}</div><div className="l">Seats filled</div></div>
+            <div className="a-stat"><div className="n">{bandScale.total}</div><div className="l">{bandMode === 'reserved' ? 'Reserved seats' : bandMode === 'general' ? 'General seats' : 'Assembly seats'}</div></div>
+            <div className="a-stat"><div className="n">{bandScale.majority ?? '—'}</div><div className="l">For a majority</div></div>
+            <div className="a-stat"><div className="n">{bandFilled || '—'}</div><div className="l">Seats filled</div></div>
           </div>
           <div>
             <div className="a-tally-h">
-              <span className="a-tally-t">Assembly 2026 — incl. reserved seats</span>
-              <span className="a-tally-n">{postponed} general seats still to poll</span>
+              <span className="a-tally-t">Assembly 2026 — {SEAT_MODE_LABEL[bandMode]}</span>
+              <span className="a-tally-n">
+                {bandMode === 'reserved' ? `${reserved.length} of 8 filled` : `${postponed} general seats still to poll`}
+              </span>
             </div>
+            {/* Seat-type toggle: same three views as /live and /records */}
+            {reserved.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 10px' }}>
+                {(['all', 'general', 'reserved'] as const).map((m) => (
+                  <button key={m} onClick={() => setBandMode(m)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 500,
+                      cursor: 'pointer', border: '1px solid var(--border)',
+                      background: bandMode === m ? 'var(--accent)' : 'transparent',
+                      color: bandMode === m ? '#fff' : 'var(--text2)',
+                    }}>
+                    {SEAT_MODE_LABEL[m]}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="a-seats">
               {dots.map((p, i) => (
                 <div key={i} className="a-seat" title={p} style={{ background: partyColor(p) }} />
               ))}
             </div>
             <div className="a-leg">
-              {houseTally.map((t) => (
-                <span key={t.party}>
-                  <i style={{ background: partyColor(t.party) }} />
-                  {t.party} {t.total_seats}
-                  <span style={{ color: 'var(--text3)', fontWeight: 400 }}> · 2021 general: {seats2021(t.party)}</span>
+              {sortedEntries(bandT).map(([party, n]) => (
+                <span key={party}>
+                  <i style={{ background: partyColor(party) }} />
+                  {party} {n}
+                  <span style={{ color: 'var(--text3)', fontWeight: 400 }}>
+                    {bandMode === 'all'
+                      ? ` = ${genT[party] || 0} elected + ${resT[party] || 0} reserved`
+                      : bandMode === 'general' ? ` · 2021 general: ${seats2021(party)}` : ''}
+                  </span>
                 </span>
               ))}
             </div>

@@ -4,6 +4,9 @@ import { partyColor } from '@/lib/supabase'
 import { fetchTable } from '@/lib/api'
 import { numSort } from '@/lib/utils'
 import DevNote from '@/components/DevNote'
+import {
+  SeatMode, SEAT_MODE_LABEL, ReservedRow, countBy, tallyFor, topOf,
+} from '@/lib/tally'
 
 type Row = {
   seat_id: string; seat_name: string; division: string; region_type: string
@@ -29,6 +32,9 @@ export default function Records() {
   const [selectedSeat, setSelectedSeat] = useState<string>('LA-1')
   const [candData, setCandData] = useState<CandRow[]>([])
   const [demData,  setDemData]  = useState<DemRow[]>([])
+  // 2026 seat-type split (shared logic in lib/tally.ts)
+  const [reserved, setReserved] = useState<ReservedRow[]>([])
+  const [seatMode, setSeatMode] = useState<SeatMode>('all')
 
   useEffect(() => {
     fetchTable<any>('elections_history')
@@ -41,6 +47,10 @@ export default function Records() {
     fetchTable<any>('constituencies')
       .then(d => setDemData(d))
       .catch(err => console.error('constituencies load failed:', err))
+    // Fail soft: without it, 2026 falls back to directly elected seats only
+    fetchTable<ReservedRow>('reserved_seats_2026')
+      .then(d => setReserved(d))
+      .catch(err => console.error('reserved_seats_2026 load failed:', err))
   }, [])
 
   // Compute party tallies live from elections_history data
@@ -52,6 +62,14 @@ export default function Records() {
     }
     return tally
   }
+
+  // Tally shown on the Party Tallies cards. Reserved seats exist only for
+  // 2026 in the data, so 2011-2021 always show directly elected seats.
+  const hasReserved = reserved.length > 0
+  const cardTally = (year: number): Record<string, number> =>
+    year === 2026 && hasReserved
+      ? tallyFor(seatMode, computeTally(2026), countBy(reserved, r => r.party))
+      : computeTally(year)
 
   // ── Manual overrides ─────────────────────────────────────────────────────
   // Applied after algorithmic classification for seats where the data requires
@@ -181,7 +199,7 @@ export default function Records() {
   })
 
   function TallyBar({ year }:{ year:number }) {
-    const t   = computeTally(year)
+    const t   = cardTally(year)
     const entries = Object.entries(t).sort((a,b) => b[1]-a[1])
     const max = entries.length ? entries[0][1] : 1
     if (!entries.length) return (
@@ -254,15 +272,41 @@ export default function Records() {
 
       {/* ── OVERVIEW ─────────────────────────────── */}
       {view==='overview' && <>
+        {hasReserved && (
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            <span className="text-xs font-semibold uppercase" style={{ color: 'var(--text3)' }}>
+              2026 seat type:
+            </span>
+            {(['all', 'general', 'reserved'] as const).map(m => (
+              <button key={m} onClick={() => setSeatMode(m)}
+                style={{
+                  padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', border: '1px solid var(--border)',
+                  backgroundColor: seatMode === m ? 'var(--accent)' : 'var(--bg3)',
+                  color: seatMode === m ? '#fff' : 'var(--text2)',
+                }}>
+                {SEAT_MODE_LABEL[m]}
+              </button>
+            ))}
+            <span className="text-xs" style={{ color: 'var(--text3)' }}>
+              Earlier years: directly elected seats only
+            </span>
+          </div>
+        )}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
           {YEARS.map(y => (
             <div key={y} className="card">
               <h3 className="text-xs font-semibold uppercase mb-4" style={{color:'var(--text3)'}}>
                 {y} — {(() => {
-                  const t = computeTally(y)
-                  const top = Object.entries(t).sort((a,b)=>b[1]-a[1])[0]
+                  const top = topOf(cardTally(y))
                   return top ? `${top[0]} — ${top[1]} seats` : '—'
                 })()}
+                {y === 2026 && hasReserved && (
+                  <span style={{ display: 'block', fontWeight: 400, textTransform: 'none', marginTop: 2 }}>
+                    {seatMode === 'all' ? 'Elected + reserved'
+                      : seatMode === 'general' ? 'Directly elected' : 'Reserved seats'}
+                  </span>
+                )}
               </h3>
               <TallyBar year={y} />
             </div>
