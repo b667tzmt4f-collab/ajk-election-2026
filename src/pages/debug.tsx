@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { supabase } from '@/lib/supabase'
+import { fetchTable, TableName } from '@/lib/api'
 
 export default function Debug() {
   const router = useRouter()
@@ -21,22 +21,19 @@ export default function Debug() {
     if (!allowed) return
     async function run() {
       const out: Record<string, any> = {}
-      out.supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '❌ MISSING'
-      out.anonKeyFirst20 = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.slice(0, 20) + '...'
-        : '❌ MISSING'
-      const { data: seats, error: seatsErr } = await supabase
-        .from('constituencies').select('seat_id, seat_name').limit(3)
-      out.constituencies = seats ? `✅ ${seats.length} rows` : `❌ ${seatsErr?.message}`
-      const { data: cands, error: candsErr } = await supabase
-        .from('candidates').select('id, candidate_name').limit(3)
-      out.candidates = cands ? `✅ ${cands.length} rows` : `❌ ${candsErr?.message}`
-      const { count: seatCount } = await supabase
-        .from('constituencies').select('*', { count: 'exact', head: true })
-      out.total_constituencies = seatCount ?? '❌ failed'
-      const { count: candCount } = await supabase
-        .from('candidates').select('*', { count: 'exact', head: true })
-      out.total_candidates = candCount ?? '❌ failed'
+      out.database = 'Neon (via /api/table)'
+      // Row count per table; ✅ if it loads, ❌ with the reason if not.
+      const tables: TableName[] = [
+        'constituencies', 'candidates', 'elections_history', 'seat_scores', 'candidate_results',
+      ]
+      for (const t of tables) {
+        try {
+          const rows = await fetchTable(t, { fresh: true })
+          out[t] = `✅ ${rows.length} rows`
+        } catch (err: any) {
+          out[t] = `❌ ${err.message}`
+        }
+      }
       setResults(out)
       setLoading(false)
     }
@@ -47,7 +44,7 @@ export default function Debug() {
 
   return (
     <div style={{ fontFamily: 'monospace', padding: 32, background: '#111', minHeight: '100vh', color: '#eee' }}>
-      <h1 style={{ color: '#60a5fa', marginBottom: 24 }}>🔍 Supabase Debug</h1>
+      <h1 style={{ color: '#60a5fa', marginBottom: 24 }}>🔍 Database Debug</h1>
       {loading ? <p>Running checks...</p> : (
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <tbody>

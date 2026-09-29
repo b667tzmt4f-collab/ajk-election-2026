@@ -13,7 +13,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 import Papa from 'papaparse'
-import { supabase } from './supabase'
+import { fetchTable, saveVotes } from './api'
 
 export type SheetRow = {
   seat_id: string
@@ -99,12 +99,11 @@ export async function syncFromSheet(csvUrl: string): Promise<SyncResult> {
   result.totalRows = sheetRows.length
 
   // Load all candidates once — match in memory to avoid 500+ individual SELECTs
-  const { data: candidates, error: fetchErr } = await supabase
-    .from('candidates')
-    .select('id, seat_id, candidate_name')
-
-  if (fetchErr || !candidates) {
-    return { ...result, error: `Could not load candidates from Supabase: ${fetchErr?.message}` }
+  let candidates: { id: number; seat_id: string; candidate_name: string }[]
+  try {
+    candidates = await fetchTable<{ id: number; seat_id: string; candidate_name: string }>('candidates', { fresh: true })
+  } catch (err: any) {
+    return { ...result, error: `Could not load candidates: ${err.message}` }
   }
 
   // Key: "LA-1::chaudhary azhar sadiq" — lowercase for forgiving match
@@ -128,14 +127,13 @@ export async function syncFromSheet(csvUrl: string): Promise<SyncResult> {
     result.matched++
   }
 
-  for (const u of updates) {
-    const { error } = await supabase
-      .from('candidates')
-      .update({ votes_2026: u.votes_2026, updated_at: new Date().toISOString() })
-      .eq('id', u.id)
-    if (error) {
-      result.error = `Write failed on candidate id ${u.id}: ${error.message}`
-      break
+  // One all-or-nothing save for every matched row (no half-synced results).
+  if (updates.length > 0) {
+    try {
+      await saveVotes(updates)
+    } catch (err: any) {
+      result.error = `Save failed, nothing was written: ${err.message}`
+      result.matched = 0
     }
   }
 

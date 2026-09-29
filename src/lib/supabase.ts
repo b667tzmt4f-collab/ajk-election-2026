@@ -1,11 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnon, {
-  realtime: { params: { eventsPerSecond: 10 } },
-})
+// ─────────────────────────────────────────────────────────────────────────
+// src/lib/supabase.ts
+//
+// NOTE: Supabase is no longer used. The database is now Neon (see
+// src/lib/neon.ts and src/lib/api.ts). This file keeps its old name only
+// so the many existing imports of the shared types and partyColor() keep
+// working without editing every page.
+// ─────────────────────────────────────────────────────────────────────────
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

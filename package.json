@@ -11,6 +11,7 @@
     "kill-port": "lsof -ti:3000 | xargs kill -9 2>/dev/null; echo 'Port 3000 cleared'"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.39.7",
     "@neondatabase/serverless": "^1.1.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.43.0",

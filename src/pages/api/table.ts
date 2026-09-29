@@ -60,7 +60,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       return row
     })
-    res.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=30')
+    // Admin pages add ?fresh=... right after saving: never cache those.
+    res.setHeader(
+      'Cache-Control',
+      req.query.fresh ? 'no-store' : 'public, s-maxage=5, stale-while-revalidate=30',
+    )
     return res.status(200).json(rows)
   } catch (err) {
     // Log full detail on the server; send a short message to the browser.

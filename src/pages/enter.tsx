@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import Layout from '@/components/Layout'
-import { supabase, Candidate } from '@/lib/supabase'
+import type { Candidate } from '@/lib/supabase'
+import { fetchTable, saveVotes } from '@/lib/api'
+import { ClerkProvider, SignedIn, SignedOut, SignIn, useClerk } from '@clerk/nextjs'
 import { fmt2021 } from '@/lib/utils'
 import { syncFromSheet, SyncResult } from '@/lib/sheetSync'
-
-const ENTRY_PASSWORD = process.env.NEXT_PUBLIC_ENTRY_PASSWORD || 'ajk2026'
 
 // Published Google Sheet CSV URL — see lib/sheetSync.ts for the full
 // publish/format contract (seat_id, candidate_name, votes_2026 columns).
@@ -14,10 +14,9 @@ const RESULTS_SHEET_CSV_URL =
   process.env.NEXT_PUBLIC_RESULTS_SHEET_CSV_URL ||
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE3KCdMVObOw8ty3BjIfeE8N6FcIs0MkBro6GBcUycGArczznrMAtWzN5K3vYaOaSUt2XQ46TcW-Nn/pub?output=csv'
 
-export default function DataEntry() {
-  const [authed, setAuthed]       = useState(false)
-  const [pw, setPw]               = useState('')
-  const [pwError, setPwError]     = useState('')
+// The page itself: shown only when signed in (see wrapper at the bottom).
+function DataEntryInner() {
+  const { signOut } = useClerk()
   const [seats, setSeats]         = useState<{ seat_id: string; seat_name: string }[]>([])
   const [selectedSeat, setSelectedSeat] = useState('')
   const [candidates, setCandidates]     = useState<Candidate[]>([])
@@ -30,41 +29,28 @@ export default function DataEntry() {
   const [syncResult, setSyncResult]   = useState<SyncResult | null>(null)
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null)
 
-  // Load seat list
+  // Load seat list (server returns them sorted LA-1 … LA-45)
   useEffect(() => {
-    supabase
-      .from('constituencies')
-      .select('seat_id, seat_name')
-      .order('seat_id')
-      .then(({ data }) => setSeats(data || []))
+    fetchTable<{ seat_id: string; seat_name: string }>('constituencies')
+      .then(setSeats)
+      .catch((err) => setSavedMsg(`⚠ Could not load seats: ${err.message}`))
   }, [])
+
+  // Load one seat's candidates, always fresh (never cached), sorted by 2021 rank.
+  async function loadSeat(seatId: string) {
+    const all = await fetchTable<Candidate>('candidates', { fresh: true })
+    const data = all.filter((c) => c.seat_id === seatId)
+    setCandidates(data)
+    const v: Record<number, string> = {}
+    for (const c of data) v[c.id] = c.votes_2026 > 0 ? String(c.votes_2026) : ''
+    setVotes(v)
+  }
 
   // Load candidates when seat changes
   useEffect(() => {
     if (!selectedSeat) { setCandidates([]); setVotes({}); return }
-    supabase
-      .from('candidates')
-      .select('*')
-      .eq('seat_id', selectedSeat)
-      .order('rank_2021')
-      .then(({ data }) => {
-        setCandidates(data || [])
-        const v: Record<number, string> = {}
-        for (const c of data || []) {
-          v[c.id] = c.votes_2026 > 0 ? String(c.votes_2026) : ''
-        }
-        setVotes(v)
-      })
+    loadSeat(selectedSeat).catch((err) => setSavedMsg(`⚠ Could not load candidates: ${err.message}`))
   }, [selectedSeat])
-
-  function handleLogin() {
-    if (pw === ENTRY_PASSWORD) {
-      setAuthed(true)
-      setPwError('')
-    } else {
-      setPwError('Incorrect password')
-    }
-  }
 
   async function handleSave() {
     setSaving(true)
@@ -72,22 +58,19 @@ export default function DataEntry() {
 
     const updates = candidates
       .filter((c) => votes[c.id] !== '' && votes[c.id] !== undefined)
-      .map((c) => ({
-        id: c.id,
-        votes_2026: parseInt(votes[c.id] || '0', 10),
-        updated_at: new Date().toISOString(),
-      }))
+      .map((c) => ({ id: c.id, votes_2026: parseInt(votes[c.id] || '0', 10) }))
 
-    for (const u of updates) {
-      await supabase.from('candidates').update({
-        votes_2026: u.votes_2026,
-        updated_at: u.updated_at,
-      }).eq('id', u.id)
+    try {
+      // All-or-nothing: the server checks every number before saving any.
+      const r = await saveVotes(updates)
+      setSavedMsg(`Saved ${r.updated} candidate votes for ${selectedSeat}`)
+      await loadSeat(selectedSeat)
+    } catch (err: any) {
+      setSavedMsg(`⚠ Not saved: ${err.message}`)
+    } finally {
+      setSaving(false)
+      setTimeout(() => setSavedMsg(''), 6000)
     }
-
-    setSaving(false)
-    setSavedMsg(`Saved ${updates.length} candidate votes for ${selectedSeat}`)
-    setTimeout(() => setSavedMsg(''), 4000)
   }
 
   async function handleSync() {
@@ -102,47 +85,9 @@ export default function DataEntry() {
       // form below reflects whatever the sync just wrote, in case the same
       // seat is open for a spot-check.
       if (selectedSeat) {
-        const { data } = await supabase
-          .from('candidates').select('*').eq('seat_id', selectedSeat).order('rank_2021')
-        if (data) {
-          setCandidates(data)
-          const v: Record<number, string> = {}
-          for (const c of data) v[c.id] = c.votes_2026 > 0 ? String(c.votes_2026) : ''
-          setVotes(v)
-        }
+        await loadSeat(selectedSeat).catch(() => { /* sync itself succeeded */ })
       }
     }
-  }
-
-  // ── Login screen ────────────────────────────────────────────────────────────
-  if (!authed) {
-    return (
-      <Layout>
-        <div className="max-w-sm mx-auto mt-24">
-          <div className="card">
-            <h2 className="text-lg font-bold mb-4 text-center font-display">Data Entry Login</h2>
-            <p className="text-sm text-gray-400 mb-4 text-center">
-              For authorised data-entry team only
-            </p>
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={pw}
-              onChange={(e) => setPw(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white mb-3"
-            />
-            {pwError && <p className="text-red-400 text-sm mb-2">{pwError}</p>}
-            <button
-              onClick={handleLogin}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-medium"
-            >
-              Login
-            </button>
-          </div>
-        </div>
-      </Layout>
-    )
   }
 
   // ── Entry screen ────────────────────────────────────────────────────────────
@@ -152,7 +97,7 @@ export default function DataEntry() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold font-display">Enter Live Results</h2>
           <button
-            onClick={() => setAuthed(false)}
+            onClick={() => signOut()}
             className="text-xs text-gray-500 hover:text-gray-300"
           >
             Logout
@@ -295,12 +240,32 @@ export default function DataEntry() {
             )}
 
             <p className="mt-3 text-xs text-gray-600">
-              Results are saved instantly and appear on the live dashboard in real-time.
-              No page refresh needed by viewers.
+              Results are saved instantly and appear on the live dashboard within
+              about 10 seconds. No page refresh needed by viewers.
             </p>
           </div>
         )}
       </div>
     </Layout>
+  )
+}
+
+// ── Page wrapper: Clerk login. Every save is re-checked on the server
+//    against ADMIN_EMAILS (src/lib/adminAuth.ts).
+
+export default function DataEntry() {
+  return (
+    <ClerkProvider>
+      <SignedOut>
+        <Layout>
+          <div className="flex justify-center mt-16">
+            <SignIn routing="hash" />
+          </div>
+        </Layout>
+      </SignedOut>
+      <SignedIn>
+        <DataEntryInner />
+      </SignedIn>
+    </ClerkProvider>
   )
 }

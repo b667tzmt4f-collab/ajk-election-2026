@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
-import { supabase } from '@/lib/supabase'
+import { fetchTable, saveSeatScore } from '@/lib/api'
+import { ClerkProvider, SignedIn, SignedOut, SignIn } from '@clerk/nextjs'
 import { SEAT_NAMES, SEAT_IDS } from '@/lib/seatNames'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /score — Analyst scoring interface for the 2026 projection model.
-// Password-protected (same as /enter). Each seat gets a KPI scorecard
+// Login-protected with Clerk (same as /enter). Each seat gets a KPI scorecard
 // (6 pillars, 1–5 scale) plus candidate fields and party weight override.
-// Saves to Supabase seat_scores table → feeds /projection page publicly.
+// Saves to the seat_scores table (Neon) → feeds /projection page publicly.
 // ─────────────────────────────────────────────────────────────────────────────
-
-const ENTRY_PASSWORD = process.env.NEXT_PUBLIC_ENTRY_PASSWORD || 'ajk2026'
 
 // KPI pillars — weight must sum to 100
 const PILLARS = [
@@ -105,10 +104,8 @@ function PillarSlider({ pillar, value, onChange }: {
   )
 }
 
-export default function ScorePage() {
-  const [authed, setAuthed]   = useState(false)
-  const [pw, setPw]           = useState('')
-  const [pwError, setPwError] = useState('')
+// The page itself: shown only when signed in (see wrapper at the bottom).
+function ScorePageInner() {
   const [scores, setScores]   = useState<Record<string, Score>>({})
   const [selected, setSelected] = useState<string>('LA-1')
   const [saving, setSaving]   = useState(false)
@@ -116,18 +113,18 @@ export default function ScorePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!authed) return
-    supabase.from('seat_scores').select('*')
-      .then(({ data }) => {
+    fetchTable<Score>('seat_scores', { fresh: true })
+      .then((data) => {
         const map: Record<string, Score> = {}
         // Start with defaults for all 33 in-region seats
         for (const sid of SEAT_IDS.slice(0, 33)) map[sid] = DEFAULT_SCORE(sid)
         // Overlay with any saved DB data
-        for (const row of data || []) map[row.seat_id] = { ...DEFAULT_SCORE(row.seat_id), ...row }
+        for (const row of data) map[row.seat_id] = { ...DEFAULT_SCORE(row.seat_id), ...row }
         setScores(map)
-        setLoading(false)
       })
-  }, [authed])
+      .catch((err) => setSavedMsg(`Error loading scores: ${err.message}`))
+      .finally(() => setLoading(false))
+  }, [])
 
   function updateField(field: string, value: any) {
     setScores(prev => {
@@ -143,35 +140,16 @@ export default function ScorePage() {
     setSaving(true); setSavedMsg('')
     const seat = { ...scores[selected] }
     seat.kpi_score = computeKpi(seat, seat.party_weight_pct, seat.party_score)
-    const { error } = await supabase.from('seat_scores').upsert(seat, { onConflict: 'seat_id' })
+    let errorMsg = ''
+    try {
+      await saveSeatScore(seat)
+    } catch (err: any) {
+      errorMsg = err.message
+    }
     setSaving(false)
-    setSavedMsg(error ? `Error: ${error.message}` : `✓ ${selected} saved`)
+    setSavedMsg(errorMsg ? `Error: ${errorMsg}` : `✓ ${selected} saved`)
     setTimeout(() => setSavedMsg(''), 3000)
   }
-
-  // ── Login ────────────────────────────────────────────────────────────────
-  if (!authed) return (
-    <Layout>
-      <div className="max-w-sm mx-auto mt-20 card">
-        <h2 className="font-semibold mb-4 text-lg">Analyst Access</h2>
-        <input type="password" placeholder="Password" value={pw}
-          onChange={e => setPw(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              pw === ENTRY_PASSWORD ? setAuthed(true) : setPwError('Wrong password')
-            }
-          }}
-          className="w-full border rounded-lg px-3 py-2 mb-2 text-sm"
-          style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg3)' }} />
-        {pwError && <p className="text-red-500 text-xs mb-2">{pwError}</p>}
-        <button onClick={() => pw === ENTRY_PASSWORD ? setAuthed(true) : setPwError('Wrong password')}
-          className="w-full py-2 rounded-lg text-sm font-semibold text-white"
-          style={{ backgroundColor: 'var(--accent)' }}>
-          Enter
-        </button>
-      </div>
-    </Layout>
-  )
 
   if (loading) return <Layout><div className="text-center py-20" style={{ color: 'var(--text2)' }}>Loading scores…</div></Layout>
 
@@ -390,5 +368,24 @@ export default function ScorePage() {
         </div>
       </div>
     </Layout>
+  )
+}
+
+// ── Page wrapper: Clerk login (every save is re-checked on the server)
+
+export default function ScorePage() {
+  return (
+    <ClerkProvider>
+      <SignedOut>
+        <Layout>
+          <div className="flex justify-center mt-16">
+            <SignIn routing="hash" />
+          </div>
+        </Layout>
+      </SignedOut>
+      <SignedIn>
+        <ScorePageInner />
+      </SignedIn>
+    </ClerkProvider>
   )
 }
