@@ -13,6 +13,9 @@
  *   declared  = a 2026 row exists in elections_history
  *   postponed = seat exists in history but has NO 2026 row
  *               (LA-18 to LA-24, Poonch & Sudhnoti)
+ * Reserved seats (women, technocrat, ulema, overseas) come from the
+ * reserved_seats table. Full-house tally = general winners + reserved rows,
+ * both computed here, never stored as totals that could drift.
  * Nothing is hardcoded: tallies, counts and leader are computed from rows.
  */
 import { useEffect, useState } from 'react'
@@ -30,6 +33,9 @@ type HistRow = {
   total_votes_polled: number | null; margin_votes: number | null
   registered_voters: number | null
 }
+type ReservedRow = {
+  id: number; category: string; member: string; party: string; source: string | null
+}
 type CandRow = {
   seat_id: string; election_year: number; rank: number
   candidate_name: string; party: string; votes: number
@@ -38,6 +44,10 @@ type CandRow = {
 const YEAR = 2026
 const TOTAL_GENERAL = 45
 const MAJORITY = 23 // simple majority of 45 general seats
+const HOUSE_TOTAL = 53    // 45 general + 8 reserved
+const HOUSE_MAJORITY = 27 // simple majority of 53
+// Display order for reserved categories
+const RESERVED_ORDER = ['Women', 'Technocrats', 'Ulema', 'Overseas']
 
 // Refugee seats are LA-34 to LA-45 (fixed by delimitation, not data-dependent)
 const isRefugee = (sid: string) => parseInt(sid.split('-')[1]) >= 34
@@ -45,6 +55,7 @@ const isRefugee = (sid: string) => parseInt(sid.split('-')[1]) >= 34
 export default function LiveResults() {
   const [hist, setHist]       = useState<HistRow[]>([])
   const [cands, setCands]     = useState<CandRow[]>([])
+  const [reserved, setReserved] = useState<ReservedRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
   const [filter, setFilter]   = useState<'All' | 'In-Region' | 'Refugee'>('All')
@@ -62,6 +73,12 @@ export default function LiveResults() {
         setError('Could not load results. Please refresh.')
       })
       .finally(() => setLoading(false))
+
+    // Reserved seats load separately and fail soft: if this table is
+    // unavailable, general results still show and the panel is hidden.
+    fetchTable<ReservedRow>('reserved_seats_2026')
+      .then(setReserved)
+      .catch(err => console.error('reserved_seats_2026 load failed:', err))
   }, [])
 
   // ── Build one record per seat ─────────────────────────────────────────
@@ -95,6 +112,21 @@ export default function LiveResults() {
     tally[p] = (tally[p] || 0) + 1
   }
   const top = Object.entries(tally).sort((a, b) => b[1] - a[1])[0]
+
+  // Full house = general tally + one per reserved row
+  const houseTally: Record<string, number> = { ...tally }
+  for (const r of reserved) houseTally[r.party] = (houseTally[r.party] || 0) + 1
+  const houseFilled = Object.values(houseTally).reduce((a, b) => a + b, 0)
+  const houseTop = Object.entries(houseTally).sort((a, b) => b[1] - a[1])[0]
+  // Known categories first, then any other found in the data,
+  // so no row is ever silently dropped by a spelling difference
+  const allCats = [
+    ...RESERVED_ORDER,
+    ...[...new Set(reserved.map(r => r.category))].filter(c => !RESERVED_ORDER.includes(c)),
+  ]
+  const reservedByCat = allCats
+    .map(cat => ({ cat, rows: reserved.filter(r => r.category === cat) }))
+    .filter(g => g.rows.length > 0)
 
   const filtered = seats.filter(s => filter === 'All' || s.region === filter)
   const sel = seats.find(s => s.seat_id === selectedSeat)
@@ -154,6 +186,47 @@ export default function LiveResults() {
                 Seat Tally (general seats)
               </h3>
               <PartyTallyBar tally={tally} majority={MAJORITY} />
+            </div>
+          )}
+
+          {/* Full house incl. reserved seats (only when reserved data loaded) */}
+          {reserved.length > 0 && (
+            <div className="card mb-6">
+              <div className="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text3)' }}>
+                  Assembly: {houseFilled} of {HOUSE_TOTAL} seats filled (incl. reserved)
+                </h3>
+                {houseTop && (
+                  <span className="text-sm font-semibold" style={{ color: partyColor(houseTop[0]) }}>
+                    {houseTop[0]} {houseTop[1]} · {houseTop[1] >= HOUSE_MAJORITY ? 'majority' : 'short of majority'} ({HOUSE_MAJORITY} needed)
+                  </span>
+                )}
+              </div>
+              <PartyTallyBar tally={houseTally} majority={HOUSE_MAJORITY} />
+
+              <h4 className="text-xs font-semibold uppercase tracking-wide mt-6 mb-3" style={{ color: 'var(--text3)' }}>
+                Reserved seats ({reserved.length})
+              </h4>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {reservedByCat.map(g => (
+                  <div key={g.cat}>
+                    <p className="text-xs mb-1.5" style={{ color: 'var(--text2)' }}>
+                      {g.cat} ({g.rows.length})
+                    </p>
+                    <div className="space-y-1.5">
+                      {g.rows.map(r => (
+                        <div key={r.id} className="flex items-center justify-between text-sm gap-2">
+                          <span style={{ color: 'var(--text)' }}>{r.member}</span>
+                          <span className="badge text-white px-2 py-0.5 text-xs rounded font-semibold"
+                                style={{ backgroundColor: partyColor(r.party) }}>
+                            {r.party}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
