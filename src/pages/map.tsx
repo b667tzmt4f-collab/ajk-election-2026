@@ -4,11 +4,13 @@ import StatCard from '@/components/StatCard'
 import AJKConstituencyMap, { DistrictDatum } from '@/components/AJKConstituencyMap'
 import { partyColor, Candidate } from '@/lib/supabase'
 import { fetchTable } from '@/lib/api'
+import type { SeatResult2026 } from '@/hooks/useResults2026'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Map page (v2 — dual-layer: district colour + constituency boundaries)
 //
-// District layer: shaded by dominant 2021 winning party.
+// District layer: shaded by dominant winning party for the selected year
+// (2026 by default, 2021 via the toggle). Postponed 2026 seats are grey.
 //   → Clicking a district CALLOUT BOX opens district seat breakdown (right panel).
 //
 // Constituency layer: colourless polygons with red LA-N labels overlaid on top.
@@ -58,6 +60,19 @@ export default function MapView() {
   const [seats, setSeats] = useState<SeatRow[]>([])
   const [loading, setLoading] = useState(true)
 
+  // ── 2026 results + year toggle ─────────────────────────────────────────
+  const [year, setYear] = useState<2026 | 2021>(2026)
+  const [res26, setRes26] = useState<Record<string, SeatResult2026>>({})
+  useEffect(() => {
+    fetchTable<SeatResult2026>('results_2026')
+      .then((rows) => {
+        const m: Record<string, SeatResult2026> = {}
+        for (const r of rows) m[r.seat_id] = r
+        setRes26(m)
+      })
+      .catch((err) => console.error('results_2026 load failed:', err))
+  }, [])
+
   // ── Panel state ────────────────────────────────────────────────────────
   const [panelMode, setPanelMode] = useState<PanelMode>('idle')
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
@@ -103,6 +118,20 @@ export default function MapView() {
     setSeatMeta(meta)
   }, [selectedSeat, seats])
 
+  // Winning party / winner name for the selected year.
+  // 2026 seats that did not poll return 'Postponed'.
+  const partyFor = (s: SeatRow): string => {
+    if (year === 2021) return s.winner_party_2021 || 'Other'
+    const r = res26[s.seat_id]
+    if (!r) return '—'
+    return r.status === 'declared' ? (r.winner_party || 'Other') : 'Postponed'
+  }
+  const winnerFor = (s: SeatRow): string => {
+    if (year === 2021) return s.winner_2021 || ''
+    const r = res26[s.seat_id]
+    return r?.status === 'declared' ? (r.winner_name || '') : 'Polling postponed'
+  }
+
   // ── Roll seats up to districts ──────────────────────────────────────────
   const districtStats: Record<
     string,
@@ -116,7 +145,8 @@ export default function MapView() {
     if (!d || !districtStats[d]) continue
     districtStats[d].seats += 1
     districtStats[d].rows.push(s)
-    const p = s.winner_party_2021 || 'Other'
+    const p = partyFor(s)
+    if (p === 'Postponed' || p === '—') continue // no result: doesn't count toward a district lead
     districtStats[d].parties[p] = (districtStats[d].parties[p] || 0) + 1
   }
   for (const d of DISTRICTS) {
@@ -132,7 +162,9 @@ export default function MapView() {
     mapData[d] = {
       fill: top === '—' ? 'var(--bg3)' : partyColor(top),
       label: d,
-      value: ds.seats ? `${top} · ${ds.parties[top]}/${ds.seats}` : 'no data',
+      value: !ds.seats ? 'no data'
+        : top === '—' ? 'postponed'
+        : `${top} · ${ds.parties[top]}/${ds.seats}`,
     }
   }
 
@@ -175,10 +207,24 @@ export default function MapView() {
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-1 font-display">Constituency Map</h2>
         <p className="text-sm" style={{ color: 'var(--text2)' }}>
-          Districts shaded by dominant 2021 party. Click a{' '}
+          Districts shaded by dominant {year} party. Click a{' '}
           <strong>district label box</strong> for its seat breakdown, or click a{' '}
-          <strong>constituency</strong> for 2021 candidate results.
+          <strong>constituency</strong> for its results.
         </p>
+        {/* Year toggle */}
+        <div className="flex gap-2 mt-3">
+          {([2026, 2021] as const).map((y) => (
+            <button key={y} onClick={() => setYear(y)}
+              className="px-3 py-1.5 rounded text-xs font-semibold"
+              style={{
+                backgroundColor: year === y ? 'var(--accent)' : 'var(--bg3)',
+                color: year === y ? '#fff' : 'var(--text2)',
+                border: '1px solid var(--border)',
+              }}>
+              {y} {y === 2026 ? 'result' : 'baseline'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Summary stat cards ────────────────────────────────────────── */}
@@ -188,7 +234,7 @@ export default function MapView() {
         <StatCard
           label="Parties leading districts"
           value={partiesPresent.length}
-          sub="Distinct 2021 winners"
+          sub={`Distinct ${year} winners`}
         />
       </div>
 
@@ -263,7 +309,7 @@ export default function MapView() {
                 <h3 className="text-lg font-bold">{selectedDistrict}</h3>
               </div>
               <p className="text-xs mb-4" style={{ color: 'var(--text3)' }}>
-                {sel.seats} {sel.seats === 1 ? 'seat' : 'seats'} · dominant 2021 party:{' '}
+                {sel.seats} {sel.seats === 1 ? 'seat' : 'seats'} · dominant {year} party:{' '}
                 <span style={{ color: partyColor(sel.topParty), fontWeight: 700 }}>
                   {sel.topParty}
                 </span>
@@ -288,17 +334,17 @@ export default function MapView() {
                           {r.seat_id} ·{' '}
                         </span>
                         <span className="text-sm font-medium">{r.seat_name}</span>
-                        {r.winner_2021 && (
+                        {winnerFor(r) && (
                           <p className="text-xs" style={{ color: 'var(--text3)' }}>
-                            2021: {r.winner_2021}
+                            {year}: {winnerFor(r)}
                           </p>
                         )}
                       </div>
                       <span
                         className="badge text-white ml-2 shrink-0"
-                        style={{ backgroundColor: partyColor(r.winner_party_2021) }}
+                        style={{ backgroundColor: partyColor(partyFor(r)) }}
                       >
-                        {r.winner_party_2021}
+                        {partyFor(r)}
                       </span>
                     </button>
                   ))}
@@ -316,12 +362,12 @@ export default function MapView() {
                         style={{ color: '#E4002B' }}>
                     {selectedSeat}
                   </span>
-                  {seatMeta?.winner_party_2021 && (
+                  {seatMeta && (
                     <span
                       className="badge text-white text-xs"
-                      style={{ backgroundColor: partyColor(seatMeta.winner_party_2021) }}
+                      style={{ backgroundColor: partyColor(partyFor(seatMeta)) }}
                     >
-                      {seatMeta.winner_party_2021}
+                      {partyFor(seatMeta)}
                     </span>
                   )}
                 </div>
@@ -332,6 +378,48 @@ export default function MapView() {
                   2021 General Election · All candidates
                 </p>
               </div>
+
+              {/* 2026 result box */}
+              {res26[selectedSeat] && (() => {
+                const r = res26[selectedSeat]
+                if (r.status === 'postponed') return (
+                  <div className="rounded-lg p-3 mb-4 text-sm"
+                       style={{ backgroundColor: 'var(--bg3)', color: 'var(--text2)' }}>
+                    <strong>2026:</strong> polling postponed (security situation).
+                  </div>
+                )
+                const rows = [
+                  { tag: '✓ Winner', name: r.winner_name, party: r.winner_party, votes: r.winner_votes, pct: r.winner_pct },
+                  { tag: 'Runner-up', name: r.runner_name, party: r.runner_party, votes: r.runner_votes, pct: r.runner_pct },
+                ]
+                return (
+                  <div className="rounded-lg p-3 mb-5" style={{ border: '1px solid var(--border)' }}>
+                    <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--accent)' }}>
+                      2026 General Election
+                    </p>
+                    {rows.map((x) => (
+                      <div key={x.tag} className="flex items-center justify-between gap-2 mb-1.5">
+                        <div className="min-w-0">
+                          <span className="text-xs" style={{ color: 'var(--text3)' }}>{x.tag} · </span>
+                          <span className="text-sm font-semibold">{x.name}</span>
+                        </div>
+                        <div className="shrink-0 flex items-center gap-2">
+                          <span className="badge text-white text-xs"
+                                style={{ backgroundColor: partyColor(x.party || 'Other') }}>{x.party}</span>
+                          <span className="font-mono text-xs font-bold">
+                            {(x.votes ?? 0).toLocaleString()}{x.pct != null ? ` · ${x.pct}%` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs mt-2" style={{ color: 'var(--text3)' }}>
+                      Margin {(r.margin ?? 0).toLocaleString()}
+                      {r.turnout_pct != null && ` · Turnout ${r.turnout_pct}%`}
+                      {r.data_note && ` · ${r.data_note}`}
+                    </p>
+                  </div>
+                )
+              })()}
 
               {/* Candidate list */}
               {candidatesLoading ? (
