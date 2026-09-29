@@ -1,5 +1,25 @@
+// ─────────────────────────────────────────────────────────────────────────
+// src/hooks/useLiveResults.ts
+//
+// Live results for the home page and /live.
+//
+// CHANGE FROM SUPABASE VERSION:
+//   Before: a Supabase realtime channel pushed every vote update instantly.
+//   Now:    the page re-checks the server every POLL_MS (10 seconds).
+//   Neon has no realtime push, and polling is simpler and more robust
+//   under heavy election-night traffic (the server caches for 5s, so
+//   thousands of visitors still cause very few database queries).
+//
+//   Polling pauses while the browser tab is hidden (saves data on phones)
+//   and refreshes immediately when the visitor comes back.
+//
+// Everything this hook RETURNS is unchanged, so pages using it need no edits.
+// ─────────────────────────────────────────────────────────────────────────
 import { useEffect, useState, useCallback } from 'react'
-import { supabase, Candidate, Constituency } from '@/lib/supabase'
+import type { Candidate, Constituency } from '@/lib/supabase' // types only; no Supabase connection
+import { fetchTable } from '@/lib/api'
+
+const POLL_MS = 10_000
 
 export function useLiveResults() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
@@ -10,19 +30,17 @@ export function useLiveResults() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [{ data: cands, error: candsErr }, { data: seats, error: seatsErr }] =
-        await Promise.all([
-          supabase.from('candidates').select('*').order('seat_id').order('rank_2021'),
-          supabase.from('constituencies').select('*').order('seat_id'),
-        ])
-      if (candsErr) throw new Error(candsErr.message)
-      if (seatsErr) throw new Error(seatsErr.message)
-      if (cands) setCandidates(cands)
-      if (seats) setConstituencies(seats)
+      const [cands, seats] = await Promise.all([
+        fetchTable<Candidate>('candidates'),
+        fetchTable<Constituency>('constituencies'),
+      ])
+      setCandidates(cands)
+      setConstituencies(seats)
       setError(null)
       setLastUpdated(new Date())
     } catch (err: any) {
-      setError(err.message || 'Failed to load results')
+      // Keep showing the last good data; just report the problem.
+      setError(err?.message || 'Failed to load results')
     } finally {
       setLoading(false)
     }
@@ -31,27 +49,22 @@ export function useLiveResults() {
   useEffect(() => {
     fetchAll()
 
-    const channel = supabase
-      .channel('live-votes')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'candidates' },
-        (payload) => {
-          setCandidates((prev) =>
-            prev.map((c) =>
-              c.id === (payload.new as Candidate).id
-                ? { ...c, ...(payload.new as Candidate) }
-                : c
-            )
-          )
-          setLastUpdated(new Date())
-        }
-      )
-      .subscribe()
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') fetchAll()
+    }, POLL_MS)
 
-    return () => { supabase.removeChannel(channel) }
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchAll()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [fetchAll])
 
+  // ── Everything below is unchanged from the Supabase version ──────────
   const seatResults = constituencies.map((seat) => {
     const seatCands = candidates
       .filter((c) => c.seat_id === seat.seat_id)

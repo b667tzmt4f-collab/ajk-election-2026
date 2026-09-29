@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLiveResults } from '@/hooks/useLiveResults'
-import { supabase, partyColor } from '@/lib/supabase'
+import { partyColor } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 
 const POLL_DATE = new Date('2026-07-27T09:00:00+05:00')
 
@@ -82,11 +83,9 @@ export default function Home() {
   const anyReporting = liveTally.length > 0
 
   useEffect(() => {
-    supabase
-      .from('constituencies')
-      .select('winner_party_2021')
-      .then(({ data, error }) => {
-        if (error || !data || data.length === 0) return
+    fetchTable<{ winner_party_2021: string }>('constituencies')
+      .then((data) => {
+        if (!data || data.length === 0) return
         const counts: Record<string, number> = {}
         for (const row of data) {
           const p = (row as any).winner_party_2021 || 'Other'
@@ -97,6 +96,7 @@ export default function Home() {
           .sort((a, b) => b.seats - a.seats)
         if (next.length) setTally(next)
       })
+      .catch(() => { /* keep FALLBACK_TALLY if the server is unreachable */ })
   }, [])
 
   const dots: string[] = []

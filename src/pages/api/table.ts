@@ -23,7 +23,7 @@ const SEAT_ORDER = `NULLIF(regexp_replace(seat_id, '\\D', '', 'g'), '')::int NUL
 
 const ALLOWED: Record<string, string> = {
   constituencies:    `SELECT * FROM constituencies ORDER BY ${SEAT_ORDER}`,
-  candidates:        `SELECT * FROM candidates ORDER BY ${SEAT_ORDER}, id`,
+  candidates:        `SELECT * FROM candidates ORDER BY ${SEAT_ORDER}, rank_2021 NULLS LAST, id`,
   elections_history: `SELECT * FROM elections_history ORDER BY ${SEAT_ORDER}, election_year`,
   seat_scores:       `SELECT * FROM seat_scores ORDER BY ${SEAT_ORDER}`,
   candidate_results: `SELECT * FROM candidate_results ORDER BY id`,
