@@ -4,6 +4,7 @@ import DevNote from '@/components/DevNote'
 import StatCard from '@/components/StatCard'
 import { partyColor } from '@/lib/supabase'
 import { fetchTable } from '@/lib/api'
+import type { SeatResult2026 } from '@/hooks/useResults2026'
 import { SEAT_NAMES } from '@/lib/seatNames'
 import { numSort } from '@/lib/utils'
 
@@ -40,6 +41,18 @@ export default function Projection() {
   const [scores, setScores]     = useState<SeatScore[]>([])
   const [loading, setLoading]   = useState(true)
   const [filter, setFilter]     = useState<string>('all')
+  const [results, setResults]   = useState<Record<string, SeatResult2026>>({})
+
+  // Actual 2026 results, keyed by seat, for the projection-vs-result check
+  useEffect(() => {
+    fetchTable<SeatResult2026>('results_2026')
+      .then((rows) => {
+        const m: Record<string, SeatResult2026> = {}
+        for (const r of rows) m[r.seat_id] = r
+        setResults(m)
+      })
+      .catch((err) => console.error('results_2026 load failed:', err))
+  }, [])
 
   useEffect(() => {
     fetchTable<SeatScore>('seat_scores')
@@ -58,6 +71,25 @@ export default function Projection() {
   for (const s of high) {
     partyTally[s.projected_party] = (partyTally[s.projected_party] || 0) + 1
   }
+
+  // ── Projection vs actual result ─────────────────────────────────────
+  // A "hit" = projected party equals the actual 2026 winning party.
+  // Seats that were postponed, or have no result, are excluded (not misses).
+  type Verdict = 'hit' | 'miss' | 'postponed' | 'no-result'
+  const verdictOf = (s: SeatScore): Verdict => {
+    const r = results[s.seat_id]
+    if (!r) return 'no-result'
+    if (r.status === 'postponed') return 'postponed'
+    return r.winner_party === s.projected_party ? 'hit' : 'miss'
+  }
+  const judged = called.filter((s) => ['hit', 'miss'].includes(verdictOf(s)))
+  const hits = judged.filter((s) => verdictOf(s) === 'hit')
+  const accuracy = judged.length ? Math.round((hits.length / judged.length) * 100) : 0
+  const byConf = (['high', 'moderate', 'toss-up'] as const).map((c) => {
+    const j = judged.filter((s) => s.confidence === c)
+    const h = j.filter((s) => verdictOf(s) === 'hit').length
+    return { c, judged: j.length, hits: h }
+  })
 
   const filtered = filter === 'all' ? called
     : filter === 'high' ? high
@@ -126,6 +158,67 @@ export default function Projection() {
           <p className="text-xs mt-2" style={{ color: 'var(--text3)' }}>
             Moderate and toss-up seats excluded. Not a final forecast — model in progress.
           </p>
+        </div>
+      )}
+
+      {/* ── Projection vs actual 2026 result ─────────────────────────── */}
+      {called.length > 0 && Object.keys(results).length > 0 && (
+        <div className="card mb-6" style={{ borderTop: '3px solid var(--accent)' }}>
+          <h3 className="font-semibold mb-1">Projection vs actual result</h3>
+          <p className="text-xs mb-4" style={{ color: 'var(--text3)' }}>
+            A seat counts as correct when the projected party won. Postponed seats are excluded.
+          </p>
+          <div className="grid md:grid-cols-4 gap-4 mb-4">
+            <StatCard label="Correct calls" value={`${hits.length} / ${judged.length}`} sub={`${accuracy}% accuracy`} />
+            {byConf.map((b) => (
+              <StatCard key={b.c}
+                label={`${b.c.charAt(0).toUpperCase() + b.c.slice(1)} confidence`}
+                value={b.judged ? `${b.hits} / ${b.judged}` : '—'}
+                sub={b.judged ? `${Math.round((b.hits / b.judged) * 100)}% correct` : 'no calls'} />
+            ))}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr style={{ backgroundColor: 'var(--bg3)' }}>
+                  {['Seat', 'Constituency', 'Projected', 'Confidence', 'Actual winner', 'Verdict'].map((h) => (
+                    <th key={h} className="text-left py-2 px-3 text-xs uppercase font-semibold"
+                        style={{ color: 'var(--text3)', borderBottom: '2px solid var(--border)' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {called.map((s) => {
+                  const r = results[s.seat_id]
+                  const v = verdictOf(s)
+                  const vColor = v === 'hit' ? '#1B7A43' : v === 'miss' ? '#DC2626' : 'var(--text3)'
+                  const vLabel = v === 'hit' ? '✓ Correct' : v === 'miss' ? '✗ Missed' : v === 'postponed' ? 'Postponed' : '—'
+                  return (
+                    <tr key={s.seat_id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td className="py-2 px-3 text-xs font-mono font-bold" style={{ color: 'var(--accent)' }}>{s.seat_id}</td>
+                      <td className="py-2 px-3 text-xs">{SEAT_NAMES[s.seat_id]}</td>
+                      <td className="py-2 px-3 text-xs">
+                        <span className="badge text-white" style={{ backgroundColor: partyColor(s.projected_party) }}>
+                          {s.projected_party}
+                        </span>{' '}{s.projected_winner}
+                      </td>
+                      <td className="py-2 px-3 text-xs" style={{ color: CONFIDENCE_COLOR[s.confidence] }}>{s.confidence}</td>
+                      <td className="py-2 px-3 text-xs">
+                        {r?.status === 'declared' ? (
+                          <>
+                            <span className="badge text-white" style={{ backgroundColor: partyColor(r.winner_party || 'Other') }}>
+                              {r.winner_party}
+                            </span>{' '}{r.winner_name}
+                          </>
+                        ) : '—'}
+                      </td>
+                      <td className="py-2 px-3 text-xs font-semibold" style={{ color: vColor }}>{vLabel}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
