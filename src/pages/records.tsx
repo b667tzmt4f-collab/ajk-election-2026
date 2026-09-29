@@ -16,14 +16,15 @@ type CandRow = {
   candidate_name: string; party: string; votes: number; vote_share_pct: number
 }
 type DemRow = {
-  seat_id: string; registered_2021: number
+  seat_id: string; registered_2021: number; registered_2026: number
 }
-const YEARS = [2011, 2016, 2021] as const
+// 2026 rows come from sync_2026_history.sql (38 declared seats; 7 postponed)
+const YEARS = [2011, 2016, 2021, 2026] as const
 
 export default function Records() {
   const [data, setData]       = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
-  const [yearTab, setYear]    = useState<2011|2016|2021>(2021)
+  const [yearTab, setYear]    = useState<2011|2016|2021|2026>(2026)
   const [view, setView]       = useState<'overview'|'seats'|'three-way'>('overview')
   const [selectedSeat, setSelectedSeat] = useState<string>('LA-1')
   const [candData, setCandData] = useState<CandRow[]>([])
@@ -82,6 +83,10 @@ export default function Records() {
   const compRows = allSeats.map(sid => {
     const find = (y:number) => data.find(r => r.seat_id===sid && r.election_year===y)
     const r11=find(2011), r16=find(2016), r21=find(2021)
+    // 2026 row. Kept OUT of the winners/parties arrays so the historical
+    // seat-profile logic (2011-2021) is unchanged.
+    // No row = seat not yet polled (LA-18 to LA-24 postponed).
+    const r26=find(2026)
     const p11=r11?.winner_party||'—', p16=r16?.winner_party||'—', p21=r21?.winner_party||'—'
     const w11=r11?.winner||'—', w16=r16?.winner||'—', w21=r21?.winner||'—'
 
@@ -170,6 +175,8 @@ export default function Records() {
       w11, p11, v11:r11?.winner_votes,
       w16, p16, v16:r16?.winner_votes,
       w21, p21, v21:r21?.winner_votes,
+      has26: !!r26,
+      w26: r26?.winner||'—', p26: r26?.winner_party||'—', v26: r26?.winner_votes,
     }
   })
 
@@ -206,7 +213,8 @@ export default function Records() {
     <Layout>
       <h2 className="text-2xl font-bold mb-1 font-display">Election Records</h2>
       <p className="text-sm mb-6" style={{color:'var(--text2)'}}>
-        AJK General Elections 2011, 2016 and 2021 — official EC results
+        AJK General Elections 2011, 2016, 2021 and 2026 — official EC results
+        (2026: 38 declared seats; LA-18 to LA-24 postponed)
       </p>
       <DevNote type="missing" label="Source citation">
         Each sub-tab and the constituency results table should display a visible source line:
@@ -246,7 +254,7 @@ export default function Records() {
 
       {/* ── OVERVIEW ─────────────────────────────── */}
       {view==='overview' && <>
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="grid md:grid-cols-4 gap-4 mb-6">
           {YEARS.map(y => (
             <div key={y} className="card">
               <h3 className="text-xs font-semibold uppercase mb-4" style={{color:'var(--text3)'}}>
@@ -262,6 +270,15 @@ export default function Records() {
         </div>
         <div className="card">
           <h3 className="font-semibold mb-2">Anti-incumbency pattern</h3>
+          <p className="text-sm leading-relaxed mb-2" style={{color:'var(--text2)'}}>
+            {(() => {
+              const t26 = computeTally(2026)
+              const top26 = Object.entries(t26).sort((a,b)=>b[1]-a[1])[0]
+              if (!top26) return null
+              const declared = Object.values(t26).reduce((a,b)=>a+b,0)
+              return `2026: ${top26[0]} won ${top26[1]} of ${declared} declared general seats, extending the pattern of a different winning party at every election. PTI, the 2021 winner, boycotted the poll.`
+            })()}
+          </p>
           <p className="text-sm leading-relaxed" style={{color:'var(--text2)'}}>
             {(() => {
               const t11 = computeTally(2011), t16 = computeTally(2016), t21 = computeTally(2021)
@@ -285,8 +302,8 @@ export default function Records() {
         const seatName = seatRow(2021)?.seat_name ?? seatRow(2016)?.seat_name ?? seatRow(2011)?.seat_name ?? selectedSeat
         const division = seatRow(2021)?.division ?? seatRow(2016)?.division ?? seatRow(2011)?.division ?? ''
 
-        // Year tab — 2021 first
-        const yearTabs = [2021, 2016, 2011] as const
+        // Year tab — newest first
+        const yearTabs = [2026, 2021, 2016, 2011] as const
 
         const YearTable = ({ year }: { year: number }) => {
           const row = seatRow(year)
@@ -303,7 +320,9 @@ export default function Records() {
           const polled      = row?.total_votes_polled ?? null
           // registered_voters col on elections_history (2021); fall back to constituencies table
           const registered  = row?.registered_voters
-            ?? demData.find(d => d.seat_id === selectedSeat)?.registered_2021
+            ?? (year === 2026
+                  ? demData.find(d => d.seat_id === selectedSeat)?.registered_2026
+                  : demData.find(d => d.seat_id === selectedSeat)?.registered_2021)
             ?? null
           const turnoutPct  = registered && polled
             ? ((polled / registered) * 100).toFixed(1) : null
@@ -577,14 +596,25 @@ export default function Records() {
                             borderBottom:'2px solid var(--border)', borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
                   2021 — PTI wins
                 </th>
+                {(() => {
+                  // Top party derived live via computeTally(): no hardcoded winner
+                  const top = Object.entries(computeTally(2026)).sort((a,b)=>b[1]-a[1])[0]
+                  return (
+                    <th colSpan={3} className="py-2.5 px-3 text-center font-semibold"
+                        style={{backgroundColor: top ? partyColor(top[0]) : 'var(--accent)', color:'white',
+                                borderBottom:'2px solid var(--border)', borderLeft:'2px solid rgba(255,255,255,0.2)'}}>
+                      {top ? `2026 — ${top[0]} wins` : '2026'}
+                    </th>
+                  )
+                })()}
               </tr>
               <tr style={{backgroundColor:'var(--bg3)'}}>
                 <th className="py-2 px-3" style={{borderBottom:'1px solid var(--border)'}}></th>
                 <th className="py-2 px-3" style={{borderBottom:'1px solid var(--border)'}}></th>
-                {['Winner','Party','Votes','Winner','Party','Votes','Winner','Party','Votes'].map((h,i) => (
+                {['Winner','Party','Votes','Winner','Party','Votes','Winner','Party','Votes','Winner','Party','Votes'].map((h,i) => (
                   <th key={i} className="py-2 px-3 text-left text-xs uppercase font-semibold"
                       style={{color:'var(--text3)', borderBottom:'1px solid var(--border)',
-                              borderLeft: i===0||i===3||i===6 ? '2px solid var(--border)' : undefined}}>
+                              borderLeft: i===0||i===3||i===6||i===9 ? '2px solid var(--border)' : undefined}}>
                     {h}
                   </th>
                 ))}
@@ -619,6 +649,21 @@ export default function Records() {
                   <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
                     {r.v21?.toLocaleString()??'—'}
                   </td>
+                  {r.has26 ? <>
+                    <td className="py-2 px-3" style={{borderLeft:'2px solid var(--border)'}}>{r.w26}</td>
+                    <td className="py-2 px-3">
+                      {r.p26!=='—'&&<span className="badge text-white text-xs" style={{backgroundColor:partyColor(r.p26)}}>{r.p26}</span>}
+                    </td>
+                    <td className="py-2 px-3 text-right" style={{color:'var(--text3)'}}>
+                      {r.v26?.toLocaleString()??'—'}
+                    </td>
+                  </> : (
+                    // Seat exists historically but has no 2026 row: not yet polled
+                    <td colSpan={3} className="py-2 px-3 italic text-center"
+                        style={{borderLeft:'2px solid var(--border)', color:'var(--text3)'}}>
+                      Polling postponed
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
