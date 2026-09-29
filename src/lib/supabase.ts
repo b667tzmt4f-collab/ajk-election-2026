@@ -56,6 +56,11 @@ export const PARTY_COLORS: Record<string, string> = {
   'Independent':  '#888780',
   'TLP':          '#1C1C1C',
   'JI':           '#004D40',
+  // Parties that won votes/seats in 2026
+  'JKADB':        '#8B5E3C',
+  'IPP':          '#00A3E0',
+  'PML-Q':        '#6B8E23',
+  'JKUM':         '#C2185B',
   'Other':        '#AAAAAA',
 }
 

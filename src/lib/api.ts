@@ -15,6 +15,9 @@ export type TableName =
   | 'elections_history'
   | 'seat_scores'
   | 'candidate_results'
+  | 'results_2026'
+  | 'party_results_2026'
+  | 'reserved_seats_2026'
 
 async function readError(res: Response, fallback: string): Promise<string> {
   try {

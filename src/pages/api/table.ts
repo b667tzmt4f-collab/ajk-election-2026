@@ -30,6 +30,10 @@ const ALLOWED: Record<string, string> = {
   elections_history: `SELECT * FROM elections_history ORDER BY ${SEAT_ORDER}, election_year`,
   seat_scores:       `SELECT * FROM seat_scores ORDER BY ${SEAT_ORDER}`,
   candidate_results: `SELECT * FROM candidate_results ORDER BY id`,
+  // 2026 General Election final results (loaded from results_2026.sql)
+  results_2026:        `SELECT * FROM results_2026 ORDER BY ${SEAT_ORDER}`,
+  party_results_2026:  `SELECT * FROM party_results_2026 ORDER BY total_seats DESC, votes DESC`,
+  reserved_seats_2026: `SELECT * FROM reserved_seats_2026 ORDER BY id`,
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

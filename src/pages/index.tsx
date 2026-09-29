@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useLiveResults } from '@/hooks/useLiveResults'
 import { partyColor } from '@/lib/supabase'
 import { fetchTable } from '@/lib/api'
+import { useResults2026 } from '@/hooks/useResults2026'
 
-const POLL_DATE = new Date('2026-07-27T09:00:00+05:00')
-
+// 2021 seat tally, shown for comparison under the 2026 result.
 const FALLBACK_TALLY: { party: string; seats: number }[] = [
   { party: 'PTI', seats: 24 },
   { party: 'PPP', seats: 12 },
@@ -14,6 +13,11 @@ const FALLBACK_TALLY: { party: string; seats: number }[] = [
 ]
 
 const UPDATES = [
+  {
+    date: '28 Aug 2026', tag: 'Result',
+    title: 'PML-N forms government with 31 of 46 filled seats',
+    body: 'Final tally incl. reserved seats: PML-N 31, PPP 14, JKADB 1. Iftikhar Gilani elected Prime Minister. 7 seats in Poonch and Sudhnoti still to poll.',
+  },
   {
     date: '12 Jun 2026', tag: 'Candidates',
     title: '2026 provisional candidate field mapped across all 45 seats',
@@ -47,40 +51,18 @@ const PRODUCTS = [
     desc: 'Ten in-region districts shaded by dominant party, rolling 45 constituencies up to an auditable geographic view.' },
 ]
 
-const FACTS = { seats: 45, majority: 23, newVoters: '~377K' }
 const pad = (n: number) => String(n).padStart(2, '0')
 
-function useCountdown() {
-  const calc = () => {
-    let diff = Math.floor((POLL_DATE.getTime() - Date.now()) / 1000)
-    if (diff < 0) diff = 0
-    return {
-      d: Math.floor(diff / 86400),
-      h: Math.floor((diff % 86400) / 3600),
-      m: Math.floor((diff % 3600) / 60),
-      s: diff % 60,
-    }
-  }
-  const ZERO = { d: 0, h: 0, m: 0, s: 0 }
-  const [c, setC] = useState(ZERO)
-  useEffect(() => {
-    setC(calc())
-    const id = setInterval(() => setC(calc()), 1000)
-    return () => clearInterval(id)
-  }, [])
-  return c
-}
-
 export default function Home() {
-  const c = useCountdown()
-  const [tally, setTally] = useState(FALLBACK_TALLY)
+  const [tally, setTally] = useState(FALLBACK_TALLY) // 2021, for comparison
+  const { seats, parties, declared, postponed, turnoutPct, loading } = useResults2026()
 
-  const { seatResults, partyTally, loading: liveLoading } = useLiveResults()
-  const sortedSeats = [...seatResults].sort(
-    (a, b) => parseInt(a.seat_id.split('-')[1]) - parseInt(b.seat_id.split('-')[1])
-  )
-  const liveTally = Object.entries(partyTally).sort((a, b) => b[1] - a[1])
-  const anyReporting = liveTally.length > 0
+  // 2026 general-seat tally (seats won at the ballot box, excl. reserved)
+  const generalTally = parties.filter((p) => p.won_general > 0)
+  // 2026 full house tally (incl. reserved seats), used for the dot chart
+  const houseTally = parties.filter((p) => p.total_seats > 0)
+  const filled = houseTally.reduce((n, p) => n + p.total_seats, 0)
+  const leader = houseTally[0]
 
   useEffect(() => {
     fetchTable<{ winner_party_2021: string }>('constituencies')
@@ -100,11 +82,12 @@ export default function Home() {
   }, [])
 
   const dots: string[] = []
-  tally.forEach((t) => { for (let i = 0; i < t.seats; i++) dots.push(t.party) })
+  houseTally.forEach((t) => { for (let i = 0; i < t.total_seats; i++) dots.push(t.party) })
+  const seats2021 = (party: string) => tally.find((t) => t.party === party)?.seats ?? 0
 
-  const Count = ({ v, l }: { v: number; l: string }) => (
+  const Count = ({ v, l }: { v: string | number; l: string }) => (
     <div className="a-count">
-      <span className="a-count-v">{pad(v)}</span>
+      <span className="a-count-v">{typeof v === 'number' ? pad(v) : v}</span>
       <span className="a-count-l">{l}</span>
     </div>
   )
@@ -115,79 +98,84 @@ export default function Home() {
       <section className="a-hero">
         <div className="a-wrap a-herogrid">
           <div className="a-herotext">
-            <div className="a-kick"><span className="ln" /> General Election · 27 July 2026</div>
-            <h1 className="a-h1">Azad Kashmir <em>votes.</em> We count every number.</h1>
+            <div className="a-kick"><span className="ln" /> General Election 2026 · Results declared</div>
+            <h1 className="a-h1">Azad Kashmir <em>has voted.</em> Every number, counted.</h1>
             <p className="a-lead">
-              Live results, three decades of records and a transparent 2026 projection for all
-              45 Legislative Assembly seats — built for the public, the press and the parties alike.
+              {leader
+                ? `${leader.party} wins ${leader.won_general} of ${declared} declared general seats and ${leader.total_seats} of ${filled} filled Assembly seats. `
+                : ''}
+              Final results for all 45 constituencies, set against three decades of records and
+              our pre-election projection.
             </p>
             <div className="a-cta">
-              <a className="a-btn a-btn-p" href="/projection">See the 2026 projection →</a>
-              <a className="a-btn a-btn-s" href="/records">Explore the records</a>
+              <a className="a-btn a-btn-p" href="/live">See full results →</a>
+              <a className="a-btn a-btn-s" href="/projection">How our projection did</a>
             </div>
             <div className="a-cd">
-              <div className="a-cd-lab">Polls open in<br /><b>Muzaffarabad &amp; 44 seats</b></div>
+              <div className="a-cd-lab">Polling<br /><b>27 Jul – 10 Aug 2026</b></div>
               <div className="a-counts">
-                <Count v={c.d} l="Days" /><span className="a-colon">:</span>
-                <Count v={c.h} l="Hours" /><span className="a-colon">:</span>
-                <Count v={c.m} l="Min" /><span className="a-colon">:</span>
-                <Count v={c.s} l="Sec" />
+                <Count v={declared} l="Declared" /><span className="a-colon">·</span>
+                <Count v={postponed} l="Postponed" /><span className="a-colon">·</span>
+                <Count v={`${turnoutPct}%`} l="Turnout" />
               </div>
             </div>
           </div>
 
-          {/* Live results panel */}
+          {/* Results panel */}
           <div className="a-livepanel">
             <div className="a-livepanel-h">
-              <div className="a-livepanel-title">
-                <span className="a-dot" /> Live Results
-              </div>
-              <span className="a-livepanel-tag">
-                {anyReporting ? 'LIVE' : liveLoading ? 'LOADING' : 'AWAITING'}
-              </span>
+              <div className="a-livepanel-title">Constituency Results</div>
+              <span className="a-livepanel-tag">{loading ? 'LOADING' : 'FINAL'}</span>
             </div>
             <div className="a-livetally">
-              {liveTally.map(([party, seats]) => (
-                <div key={party} className="a-livetally-item">
-                  <span className="a-livetally-dot" style={{ background: partyColor(party) }} />
-                  <span className="a-livetally-p">{party}</span>
-                  <span className="a-livetally-n">{seats}</span>
+              {generalTally.map((p) => (
+                <div key={p.party} className="a-livetally-item">
+                  <span className="a-livetally-dot" style={{ background: partyColor(p.party) }} />
+                  <span className="a-livetally-p">{p.party}</span>
+                  <span className="a-livetally-n">{p.won_general}</span>
                 </div>
               ))}
+              {postponed > 0 && (
+                <div className="a-livetally-item">
+                  <span className="a-livetally-dot" style={{ background: 'var(--border)' }} />
+                  <span className="a-livetally-p">Postponed</span>
+                  <span className="a-livetally-n">{postponed}</span>
+                </div>
+              )}
             </div>
             <div className="a-liveseats">
-              {sortedSeats.map((s) => (
+              {seats.map((s) => (
                 <div key={s.seat_id} className="a-liverow">
                   <div className="a-liverow-top">
                     <div className="a-liverow-seat">
                       <span className="a-liverow-id">{s.seat_id}</span>
-                      <span className="a-liverow-name">{s.seat_name}</span>
+                      <span className="a-liverow-name">{s.district}</span>
                     </div>
-                    {!s.has_results && <span className="a-liverow-pending">awaiting</span>}
+                    {s.status === 'postponed' && <span className="a-liverow-pending">postponed</span>}
                   </div>
-                  {s.has_results && s.winner ? (
+                  {s.status === 'declared' && s.winner_party ? (
                     <div className="a-liverow-cands">
                       <div className="a-liverow-cand-row">
                         <span className="a-liverow-badge"
-                              style={{ background: partyColor(s.winner.party_2026) }}>
-                          {s.winner.party_2026}
+                              style={{ background: partyColor(s.winner_party) }}>
+                          {s.winner_party}
                         </span>
-                        <span className="a-liverow-cname">{s.winner.candidate_name}</span>
-                        <span className="a-liverow-votes">{s.winner.votes_2026.toLocaleString()}</span>
+                        <span className="a-liverow-cname">{s.winner_name}</span>
+                        <span className="a-liverow-votes">{(s.winner_votes ?? 0).toLocaleString()}</span>
                       </div>
-                      {s.runner && (
+                      {s.runner_party && (
                         <div className="a-liverow-cand-row a-liverow-cand-row--runner">
                           <span className="a-liverow-badge a-liverow-badge--ghost"
-                                style={{ borderColor: partyColor(s.runner.party_2026), color: partyColor(s.runner.party_2026) }}>
-                            {s.runner.party_2026}
+                                style={{ borderColor: partyColor(s.runner_party), color: partyColor(s.runner_party) }}>
+                            {s.runner_party}
                           </span>
-                          <span className="a-liverow-cname">{s.runner.candidate_name}</span>
-                          <span className="a-liverow-votes">{s.runner.votes_2026.toLocaleString()}</span>
+                          <span className="a-liverow-cname">{s.runner_name}</span>
+                          <span className="a-liverow-votes">{(s.runner_votes ?? 0).toLocaleString()}</span>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="a-liverow-cands a-liverow-cands--empty">No votes counted yet</div>
+                    <div className="a-liverow-cands a-liverow-cands--empty">Polling postponed (security situation)</div>
                   )}
                 </div>
               ))}
@@ -200,14 +188,14 @@ export default function Home() {
       <section className="a-band">
         <div className="a-wrap a-bandin">
           <div className="a-stats">
-            <div className="a-stat"><div className="n">{FACTS.seats}</div><div className="l">Assembly seats</div></div>
-            <div className="a-stat"><div className="n">{FACTS.majority}</div><div className="l">For a majority</div></div>
-            <div className="a-stat"><div className="n">{FACTS.newVoters}</div><div className="l">New voters</div></div>
+            <div className="a-stat"><div className="n">53</div><div className="l">Assembly seats</div></div>
+            <div className="a-stat"><div className="n">27</div><div className="l">For a majority</div></div>
+            <div className="a-stat"><div className="n">{filled || '—'}</div><div className="l">Seats filled</div></div>
           </div>
           <div>
             <div className="a-tally-h">
-              <span className="a-tally-t">Seat tally — 2021 baseline</span>
-              <span className="a-tally-n">Live tally begins on polling day</span>
+              <span className="a-tally-t">Assembly 2026 — incl. reserved seats</span>
+              <span className="a-tally-n">{postponed} general seats still to poll</span>
             </div>
             <div className="a-seats">
               {dots.map((p, i) => (
@@ -215,9 +203,11 @@ export default function Home() {
               ))}
             </div>
             <div className="a-leg">
-              {tally.map((t) => (
+              {houseTally.map((t) => (
                 <span key={t.party}>
-                  <i style={{ background: partyColor(t.party) }} />{t.party} {t.seats}
+                  <i style={{ background: partyColor(t.party) }} />
+                  {t.party} {t.total_seats}
+                  <span style={{ color: 'var(--text3)', fontWeight: 400 }}> · 2021 general: {seats2021(t.party)}</span>
                 </span>
               ))}
             </div>
@@ -230,7 +220,7 @@ export default function Home() {
         <div className="a-sec-h">
           <div>
             <h2 className="a-sec-t">Latest from the desk</h2>
-            <p className="a-sec-s">Filings, roll changes and analysis as the campaign develops.</p>
+            <p className="a-sec-s">Results, government formation and analysis.</p>
           </div>
           <a className="a-more" href="#">All updates →</a>
         </div>
