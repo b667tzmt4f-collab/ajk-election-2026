@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
 import AJKConstituencyMap, { DistrictDatum } from '@/components/AJKConstituencyMap'
-import { supabase, partyColor, Candidate } from '@/lib/supabase'
+import { partyColor, Candidate } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Map page (v2 — dual-layer: district colour + constituency boundaries)
@@ -77,13 +78,10 @@ export default function MapView() {
 
   // Load 2021 seat-level winners for district rollup
   useEffect(() => {
-    supabase
-      .from('constituencies')
-      .select('seat_id, seat_name, winner_party_2021, winner_2021')
-      .then(({ data }) => {
-        setSeats(data || [])
-        setLoading(false)
-      })
+    fetchTable<any>('constituencies')
+      .then((data) => setSeats(data))
+      .catch((err) => console.error('constituencies load failed:', err))
+      .finally(() => setLoading(false))
   }, [])
 
   // ── Fetch 2021 candidates when a constituency is selected ───────────────
@@ -93,16 +91,12 @@ export default function MapView() {
     setCandidates([])
 
     // Fetch all candidates for this seat, ranked by 2021 votes descending
-    supabase
-      .from('candidates')
-      .select('id, seat_id, candidate_name, party_2021, votes_2021, rank_2021')
-      .eq('seat_id', selectedSeat)
-      .order('rank_2021', { ascending: true })
-      .then(({ data, error }) => {
-        if (error) console.error('Candidate fetch error:', error)
-        setCandidates((data as Candidate[]) || [])
-        setCandidatesLoading(false)
-      })
+    // Server returns all candidates sorted by seat then rank_2021;
+    // keep only this seat's rows (order is preserved).
+    fetchTable<Candidate>('candidates')
+      .then((data) => setCandidates(data.filter((c) => c.seat_id === selectedSeat)))
+      .catch((err) => console.error('Candidate fetch error:', err))
+      .finally(() => setCandidatesLoading(false))
 
     // Also grab seat meta (name, winner) for the panel header
     const meta = seats.find((s) => s.seat_id === selectedSeat) ?? null

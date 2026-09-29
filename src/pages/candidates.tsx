@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
-import { supabase, partyColor } from '@/lib/supabase'
+import { partyColor } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 import { SEAT_NAMES } from '@/lib/seatNames'
 import { numSort } from '@/lib/utils'
 import DevNote from '@/components/DevNote'
@@ -22,18 +23,16 @@ export default function Candidates() {
   const [seatF, setSeatF]           = useState('')
 
   useEffect(() => {
-    supabase
-      .from('candidates')
-      .select('id, seat_id, candidate_name, party_2026, party_2021, rank_2021')
-      .then(({ data, error }) => {
-        if (error) { setDbError(error.message); setLoading(false); return }
-        const sorted = (data || []).sort((a, b) => {
+    fetchTable<C>('candidates')
+      .then((data) => {
+        const sorted = data.sort((a, b) => {
           const n = numSort(a.seat_id, b.seat_id)
           return n !== 0 ? n : a.rank_2021 - b.rank_2021
         })
         setCandidates(sorted)
         setLoading(false)
       })
+      .catch((err) => { setDbError(err.message); setLoading(false) })
   }, [])
 
   const seats = [...new Set(candidates.map(c => c.seat_id))].sort(numSort)

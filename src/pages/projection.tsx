@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import DevNote from '@/components/DevNote'
 import StatCard from '@/components/StatCard'
-import { supabase, partyColor } from '@/lib/supabase'
+import { partyColor } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 import { SEAT_NAMES } from '@/lib/seatNames'
 import { numSort } from '@/lib/utils'
 
@@ -41,12 +42,10 @@ export default function Projection() {
   const [filter, setFilter]     = useState<string>('all')
 
   useEffect(() => {
-    supabase.from('seat_scores').select('*')
-      .then(({ data }) => {
-        const sorted = (data || []).sort((a, b) => numSort(a.seat_id, b.seat_id))
-        setScores(sorted)
-        setLoading(false)
-      })
+    fetchTable<SeatScore>('seat_scores')
+      .then((data) => setScores(data.sort((a, b) => numSort(a.seat_id, b.seat_id))))
+      .catch((err) => console.error('seat_scores load failed:', err))
+      .finally(() => setLoading(false))
   }, [])
 
   const called   = scores.filter(s => s.projected_winner && s.projected_winner !== '')

@@ -21,6 +21,9 @@ import { sql } from '@/lib/neon'
 // by their number so LA-2 comes before LA-10.
 const SEAT_ORDER = `NULLIF(regexp_replace(seat_id, '\\D', '', 'g'), '')::int NULLS LAST, seat_id`
 
+// Postgres type IDs the driver returns as text: 20 = bigint, 1700 = numeric.
+const NUMERIC_TYPE_IDS = new Set([20, 1700])
+
 const ALLOWED: Record<string, string> = {
   constituencies:    `SELECT * FROM constituencies ORDER BY ${SEAT_ORDER}`,
   candidates:        `SELECT * FROM candidates ORDER BY ${SEAT_ORDER}, rank_2021 NULLS LAST, id`,
@@ -42,7 +45,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const rows = await sql.query(query)
+    // fullResults gives us each column's Postgres type, so we can turn
+    // big-integer and decimal columns back into real numbers. (The Neon
+    // driver returns those as text to avoid rounding; Supabase returned
+    // numbers, and the pages expect numbers, e.g. kpi_score.toFixed().)
+    const result = await sql.query(query, [], { fullResults: true })
+    const numericCols = result.fields
+      .filter((f) => NUMERIC_TYPE_IDS.has(f.dataTypeID))
+      .map((f) => f.name)
+    const rows = result.rows.map((row: Record<string, unknown>) => {
+      for (const col of numericCols) {
+        const v = row[col]
+        if (typeof v === 'string') row[col] = Number(v)
+      }
+      return row
+    })
     res.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=30')
     return res.status(200).json(rows)
   } catch (err) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
-import { supabase, partyColor } from '@/lib/supabase'
+import { partyColor } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 import { numSort } from '@/lib/utils'
 import DevNote from '@/components/DevNote'
 
@@ -29,12 +30,16 @@ export default function Records() {
   const [demData,  setDemData]  = useState<DemRow[]>([])
 
   useEffect(() => {
-    supabase.from('elections_history').select('*')
-      .then(({ data: d }) => { setData(d || []); setLoading(false) })
-    supabase.from('candidate_results').select('*')
-      .then(({ data: d }) => { setCandData(d || []) })
-    supabase.from('constituencies').select('seat_id, registered_2021')
-      .then(({ data: d }) => { setDemData(d || []) })
+    fetchTable<any>('elections_history')
+      .then(d => setData(d))
+      .catch(err => console.error('elections_history load failed:', err))
+      .finally(() => setLoading(false))
+    fetchTable<any>('candidate_results')
+      .then(d => setCandData(d))
+      .catch(err => console.error('candidate_results load failed:', err))
+    fetchTable<any>('constituencies')
+      .then(d => setDemData(d))
+      .catch(err => console.error('constituencies load failed:', err))
   }, [])
 
   // Compute party tallies live from elections_history data

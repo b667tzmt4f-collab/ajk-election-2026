@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
-import { supabase, partyColor } from '@/lib/supabase'
+import { partyColor } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 import { numSort } from '@/lib/utils'
 
 type Row = {
@@ -16,8 +17,10 @@ export default function Analysis() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.from('elections_history').select('*')
-      .then(({ data: d }) => { setData(d || []); setLoading(false) })
+    fetchTable<Row>('elections_history')
+      .then(d => setData(d))
+      .catch(err => console.error('elections_history load failed:', err))
+      .finally(() => setLoading(false))
   }, [])
 
   // ── Manual overrides ─────────────────────────────────────────────────────

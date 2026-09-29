@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import StatCard from '@/components/StatCard'
-import { supabase, Constituency, partyColor } from '@/lib/supabase'
+import { Constituency, partyColor } from '@/lib/supabase'
+import { fetchTable } from '@/lib/api'
 import { numSort } from '@/lib/utils'
 import DevNote from '@/components/DevNote'
 
@@ -33,17 +34,19 @@ export default function Demography() {
   const [region, setRegion]   = useState('All')
 
   useEffect(() => {
-    supabase.from('constituencies').select('*')
-      .then(({ data }) => setSeats(data || []))
+    fetchTable<Constituency>('constituencies')
+      .then((data) => setSeats(data))
+      .catch((err) => console.error('constituencies load failed:', err))
     // Fetch 2021 winners — keyed by seat_id for O(1) lookup in the table
-    supabase.from('elections_history')
-      .select('seat_id, winner, winner_party')
-      .eq('election_year', 2021)
-      .then(({ data }) => {
+    fetchTable<{ seat_id: string; winner: string; winner_party: string; election_year: number }>('elections_history')
+      .then((data) => {
         const map: Record<string, { name: string; party: string }> = {}
-        for (const r of data || []) map[r.seat_id] = { name: r.winner, party: r.winner_party }
+        for (const r of data) {
+          if (r.election_year === 2021) map[r.seat_id] = { name: r.winner, party: r.winner_party }
+        }
         setWinners(map)
       })
+      .catch((err) => console.error('elections_history load failed:', err))
   }, [])
 
   // Clicking same column flips direction; clicking new column resets to desc
